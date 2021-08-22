@@ -12,28 +12,42 @@
 
 using namespace std;
 
-bool hitSphere(const Point3d &center, double radius, const Ray &r) {
+double hitSphere(const Point3d &center, double radius, const Ray &r) {
     Vec3d oc = r.origin() - center;
     double a = vecModulusSquare(r.direction());
     double b = 2.0 * dotProduct(oc, r.direction());
     double c = vecModulusSquare(oc) - radius * radius;
     double discriminant = b * b - 4 * a * c;    // 判别式
-    return (discriminant > 0);
+    if (discriminant < 0) {
+        return -1;
+    } else {
+        double t1 = (-b - sqrt(discriminant)) / (2.0 * a);
+        if (t1 > 0) {
+            return t1;
+        }
+        double t2 = (-b + sqrt(discriminant)) / (2.0 * a);
+        if (t2 > 0) {
+            return t2;
+        }
+        return -1.0;
+    }
 }
 
 Color rayColor(const Ray &r) {
-    if (hitSphere(Point3d({0, 0, -1}), 0.5, r)) {
-        return Color({1, 0, 0});
+    double t = hitSphere(Point3d({0, 0, -1}), 0.5, r);
+    if (t > 0) {
+        Vec3d N = vecNormalized(r.at(t) - Point3d({0, 0, -1}));
+        return 0.5 * Color({N.x() + 1, N.y() + 1, N.z() + 1});
     }
     Vec3d unit_direction = vecNormalized(r.direction());
-    double t = 0.5 * (unit_direction.y() + 1.0);
+    t = 0.5 * (unit_direction.y() + 1.0);
     //线性插值
     return (1.0 - t) * Color({1.0, 1.0, 1.0}) + t * Color({0.5, 0.7, 1.0});
 }
 
 
 int main() {
-    ofstream output("image5.2.ppm");
+    ofstream output("image6.1.ppm");
     const double aspect_ratio = 16.0 / 9.0;
     const int image_width = 400;
     const int image_height = static_cast<int>(image_width / aspect_ratio);
