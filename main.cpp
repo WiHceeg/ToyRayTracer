@@ -12,16 +12,28 @@
 
 using namespace std;
 
-// 实现渐变色
-Color rayColor(const Ray& r) {
+bool hitSphere(const Point3d &center, double radius, const Ray &r) {
+    Vec3d oc = r.origin() - center;
+    double a = vecModulusSquare(r.direction());
+    double b = 2.0 * dotProduct(oc, r.direction());
+    double c = vecModulusSquare(oc) - radius * radius;
+    double discriminant = b * b - 4 * a * c;    // 判别式
+    return (discriminant > 0);
+}
+
+Color rayColor(const Ray &r) {
+    if (hitSphere(Point3d({0, 0, -1}), 0.5, r)) {
+        return Color({1, 0, 0});
+    }
     Vec3d unit_direction = vecNormalized(r.direction());
     double t = 0.5 * (unit_direction.y() + 1.0);
     //线性插值
     return (1.0 - t) * Color({1.0, 1.0, 1.0}) + t * Color({0.5, 0.7, 1.0});
 }
 
+
 int main() {
-    ofstream output("image4.2.ppm");
+    ofstream output("image5.2.ppm");
     const double aspect_ratio = 16.0 / 9.0;
     const int image_width = 400;
     const int image_height = static_cast<int>(image_width / aspect_ratio);
