@@ -23,7 +23,12 @@ Color rayColor(const Ray &ray, const Hittable &world, int depth) {
     if (depth <= 0)
         return Color({0,0,0});
 
-    if (world.hit(ray, 0, infinity, record)) {
+    /*
+     * 8.4 Fixing Shadow Acne，t_min 改为 0.001 的原因，参考 https://www.reddit.com/r/GraphicsProgramming/comments/m9rwx7/shadow_acne_in_ray_tracing_in_one_weekend/
+     * 官方教程没讲清楚，其实是浮点数精度的问题，t_min 如果是 0，由于浮点精度的限制，算出一个很小很小的 double，它 > 0，于是继续反射衰减了。
+     * 但事实上这个解应该是 0，这个解应该舍弃才对，所以设置 t_min 为 0.001，强迫光线走一段路
+     */
+    if (world.hit(ray, 0.001, infinity, record)) {
 //        return 0.5 * (record.normal_ + Color({1,1,1}));   // 之前直接根据撞击位置的法向量生成颜色
         Point3d target = record.p_ + record.normal_ + randomInUnitSphere(); // 随机点
         return 0.5 * rayColor(Ray(record.p_, target - record.p_), world, depth - 1);
@@ -39,7 +44,7 @@ Color rayColor(const Ray &ray, const Hittable &world, int depth) {
 
 
 int main() {
-    ofstream output("image8.2.ppm");
+    ofstream output("image8.4.ppm");
 
     // Image
     constexpr double aspect_ratio = 16.0 / 9.0;

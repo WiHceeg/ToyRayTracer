@@ -19,9 +19,9 @@ void writeColor(ostream &out, Color pixel_color, int samples_per_pixel) {
     double b = pixel_color.z();
     //根据样本数对颜色取平均值
     double scale = 1.0 / samples_per_pixel;
-    r *= scale;
-    g *= scale;
-    b *= scale;
+    r = sqrt(r * scale);
+    g = sqrt(g * scale);
+    b = sqrt(b * scale);
 
     //写下每个颜色分量转换后的值[0,255]
     out << format("{} {} {} ",
