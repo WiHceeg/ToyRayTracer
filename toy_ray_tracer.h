@@ -39,9 +39,23 @@ double randomDouble(double min, double max) {
     return min + (max - min) * randomDouble();
 }
 
+Vec3d randomVec3d() {
+    return Vec3d({randomDouble(), randomDouble(), randomDouble()});
+}
 
+Vec3d randomVec3d(double min, double max) {
+    return Vec3d({randomDouble(min, max), randomDouble(min, max), randomDouble(min, max)});
+}
 
-
+// 单位球里的坐标
+Vec3d randomInUnitSphere() {
+    while (true) {
+        Vec3d p = randomVec3d(-1.0, 1.0);
+        if (vecModulusSquare(p) < 1) {
+            return p;
+        }
+    }
+}
 
 
 #endif //TOYRAYTRACER_TOY_RAY_TRACER_H
