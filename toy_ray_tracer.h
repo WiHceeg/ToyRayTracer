@@ -61,5 +61,13 @@ Vec3d randomUnitVector() {
     return vecNormalized(randomInUnitSphere());
 }
 
+Vec3d randomInHemisphere(const Vec3d &normal) {
+    Vec3d in_unit_sphere = randomInUnitSphere();
+    if (dotProduct(in_unit_sphere, normal) > 0.0) // In the same hemisphere as the normal
+        return in_unit_sphere;
+    else
+        return -in_unit_sphere;
+}
+
 
 #endif //TOYRAYTRACER_TOY_RAY_TRACER_H

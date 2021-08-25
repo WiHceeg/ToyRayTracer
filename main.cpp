@@ -31,7 +31,8 @@ Color rayColor(const Ray &ray, const Hittable &world, int depth) {
     if (world.hit(ray, 0.001, infinity, record)) {
 //        return 0.5 * (record.normal_ + Color({1,1,1}));   // 之前直接根据撞击位置的法向量生成颜色
 //        Point3d target = record.p_ + record.normal_ + randomInUnitSphere();   // 8.2 引入漫反射，随机点
-        Point3d target = record.p_ + record.normal_ + randomUnitVector();   // 8.5 真正的朗伯反射。1.更改后阴影不那么明显；2.更改后两个球体都更加明亮了。这两个变化都是由于光线的散射更加均匀，朝法线散射的光线更少。
+//        Point3d target = record.p_ + record.normal_ + randomUnitVector();   // 8.5 真正的朗伯反射。1.更改后阴影不那么明显；2.更改后两个球体都更加明亮了。这两个变化都是由于光线的散射更加均匀，朝法线散射的光线更少。
+        Point3d target = record.p_ + randomInHemisphere(record.normal_);    // 8.6 在法向量的半球均匀反射。许多第一批射线追踪论文都使用这种扩散方法（在采用朗伯散射之前）
 
         return 0.5 * rayColor(Ray(record.p_, target - record.p_), world, depth - 1);
 
@@ -46,7 +47,7 @@ Color rayColor(const Ray &ray, const Hittable &world, int depth) {
 
 
 int main() {
-    ofstream output("image8.5.ppm");
+    ofstream output("image8.6.ppm");
 
     // Image
     constexpr double aspect_ratio = 16.0 / 9.0;
