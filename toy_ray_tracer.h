@@ -5,10 +5,17 @@
 #ifndef TOYRAYTRACER_TOY_RAY_TRACER_H
 #define TOYRAYTRACER_TOY_RAY_TRACER_H
 
+// Common Headers
+#include "ray.h"
+#include "geometry.h"
+
+
 #include <cmath>
 #include <limits>
 #include <memory>
 #include <numbers>
+#include <random>
+#include <algorithm>
 
 using namespace std;
 // Constants
@@ -21,10 +28,20 @@ double degreesToRadians(double degrees) {
     return degrees * pi / 180.0;
 }
 
-// Common Headers
+double randomDouble() {
+    static uniform_real_distribution<double> distribution(0.0, 1.0);
+    static mt19937 generator;
+    return distribution(generator);
+}
 
-#include "Ray.h"
-#include "geometry.h"
+double randomDouble(double min, double max) {
+    // Returns a random real in [min,max).
+    return min + (max - min) * randomDouble();
+}
+
+
+
+
 
 
 #endif //TOYRAYTRACER_TOY_RAY_TRACER_H
