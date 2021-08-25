@@ -57,5 +57,9 @@ Vec3d randomInUnitSphere() {
     }
 }
 
+Vec3d randomUnitVector() {
+    return vecNormalized(randomInUnitSphere());
+}
+
 
 #endif //TOYRAYTRACER_TOY_RAY_TRACER_H

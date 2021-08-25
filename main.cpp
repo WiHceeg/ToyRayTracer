@@ -21,7 +21,7 @@ Color rayColor(const Ray &ray, const Hittable &world, int depth) {
 
     // If we've exceeded the ray bounce limit, no more light is gathered.
     if (depth <= 0)
-        return Color({0,0,0});
+        return Color({0, 0, 0});
 
     /*
      * 8.4 Fixing Shadow Acne，t_min 改为 0.001 的原因，参考 https://www.reddit.com/r/GraphicsProgramming/comments/m9rwx7/shadow_acne_in_ray_tracing_in_one_weekend/
@@ -30,7 +30,9 @@ Color rayColor(const Ray &ray, const Hittable &world, int depth) {
      */
     if (world.hit(ray, 0.001, infinity, record)) {
 //        return 0.5 * (record.normal_ + Color({1,1,1}));   // 之前直接根据撞击位置的法向量生成颜色
-        Point3d target = record.p_ + record.normal_ + randomInUnitSphere(); // 随机点
+//        Point3d target = record.p_ + record.normal_ + randomInUnitSphere();   // 8.2 引入漫反射，随机点
+        Point3d target = record.p_ + record.normal_ + randomUnitVector();   // 8.5 真正的朗伯反射。1.更改后阴影不那么明显；2.更改后两个球体都更加明亮了。这两个变化都是由于光线的散射更加均匀，朝法线散射的光线更少。
+
         return 0.5 * rayColor(Ray(record.p_, target - record.p_), world, depth - 1);
 
     } else {
@@ -44,7 +46,7 @@ Color rayColor(const Ray &ray, const Hittable &world, int depth) {
 
 
 int main() {
-    ofstream output("image8.4.ppm");
+    ofstream output("image8.5.ppm");
 
     // Image
     constexpr double aspect_ratio = 16.0 / 9.0;
