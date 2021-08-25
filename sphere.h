@@ -12,13 +12,14 @@ class Sphere : public Hittable {
 public:
     Sphere() {}
 
-    Sphere(Point3d center, double radius) : center_(center), radius_(radius) {};
+    Sphere(Point3d center, double radius, shared_ptr<Material> material_ptr) : center_(center), radius_(radius), material_ptr_(material_ptr) {};
 
     virtual bool hit(const Ray &ray, double t_min, double t_max, HitRecord &record) const override;
 
 public:
     Point3d center_;
     double radius_;
+    shared_ptr<Material> material_ptr_;
 };
 
 // record 是传出参数
@@ -44,6 +45,7 @@ bool Sphere::hit(const Ray &ray, double t_min, double t_max, HitRecord &record) 
         record.p_ = ray.at(record.t_);
         Vec3d outward_normal = (record.p_ - center_) / radius_;     // 交点指向球心
         record.setFaceNormal(ray, outward_normal);
+        record.material_ptr = material_ptr_;
 
         return true;
     }

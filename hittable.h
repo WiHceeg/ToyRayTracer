@@ -5,13 +5,17 @@
 #ifndef TOYRAYTRACER_HITTABLE_H
 #define TOYRAYTRACER_HITTABLE_H
 
-#include "ray.h"
+#include "toy_ray_tracer.h"
+
+class Material;
+
 
 // 光线与物体的碰撞记录。包括碰撞位置，法向量，时间，是否表面外
 struct HitRecord {
 public:
     Point3d p_;
     Vec3d normal_;
+    shared_ptr<Material> material_ptr;      // 当光线撞击表面（例如特定的球体）时，HitRecord中的材质指针将设置为在main()中设置该球体时所给定的材质指针
     double t_;
     bool front_face_;
 

@@ -320,6 +320,19 @@ Vec<4, T> crossProduct(const Vec<4, T> &a, const Vec<4, T> &b) {
                      a.w()};
 }
 
+// 向量是否接近零向量
+template<int n, typename T>
+bool vecNearZero(const Vec<n, T> &a) {
+    // Return true if the vector is close to zero in all dimensions.
+    constexpr auto epsilon = 1e-8;
+    for (int i = 0; i < n; i++) {
+        if (a[i] > epsilon) {
+            return false;
+        }
+    }
+    return true;
+}
+
 // |a|^2, 向量的模长的平方
 template<int n, typename T>
 T vecModulusSquare(const Vec<n, T> &a) {
@@ -334,7 +347,7 @@ T vecModulus(const Vec<n, T> &a) {
 
 // |a| ,特化 float，用sqrtf
 template<int n>
-float vecModulus(const Vec<n, float>& a) {
+float vecModulus(const Vec<n, float> &a) {
     return sqrtf(dotProduct(a, a));
 }
 
@@ -350,7 +363,6 @@ Vec<n, T> vecHomogenized(const Vec<n, T> &a) {
     T last_d = a.data_[n - 1];
     return a / last_d;
 }
-
 
 
 // 返回 a 升维的结果
@@ -420,75 +432,75 @@ Vec<n, int> vecToInt(const Vec<n, T> &a) {
 //矩阵类
 template<int m, int n, typename T>
 class Mat {
-        public:
-            T data_[m][n] = {0};
+public:
+    T data_[m][n] = {0};
 
-            Mat() = default;
+    Mat() = default;
 
-            Mat(const Mat<m, n, T> &src) {
-                for (int i = 0; i < m; i++) {
-                    for (int j = 0; j < n; j++) {
-                        data_[i][j] = src.data_[i][j];
-                    }
-                }
+    Mat(const Mat<m, n, T> &src) {
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                data_[i][j] = src.data_[i][j];
             }
+        }
+    }
 
-            Mat(const initializer_list<Vec<n, T>> &src) {
-                auto it = src.begin();
-                for (int i = 0; i < m; i++) {
-                    setRow(i, *it);
-                    it++;
-                }
-            }
+    Mat(const initializer_list<Vec<n, T>> &src) {
+        auto it = src.begin();
+        for (int i = 0; i < m; i++) {
+            setRow(i, *it);
+            it++;
+        }
+    }
 
-            T *operator[](const int i) {
-                //assert(0 <= i && i < m);
-                return data_[i];
-            }
+    T *operator[](const int i) {
+        //assert(0 <= i && i < m);
+        return data_[i];
+    }
 
-            const T *operator[](const int i) const {
-                //assert(0 <= i && i < m);
-                return data_[i];
-            }
+    const T *operator[](const int i) const {
+        //assert(0 <= i && i < m);
+        return data_[i];
+    }
 
 
-            // 取一行
-            Vec<n, T> getRow(int row) const {
-                //assert(row < m);
-                Vec<n, T> ret;
-                for (int j = 0; j < n; j++) {
-                    ret[j] = data_[row][j];
-                }
-                return ret;
-            }
+    // 取一行
+    Vec<n, T> getRow(int row) const {
+        //assert(row < m);
+        Vec<n, T> ret;
+        for (int j = 0; j < n; j++) {
+            ret[j] = data_[row][j];
+        }
+        return ret;
+    }
 
-            // 取一列
-            Vec<m, T> getCol(int col) const {
-                //assert(col < n);
-                Vec<m, T> ret;
-                for (int i = 0; i < m; i++) {
-                    ret[i] = data_[i][col];
-                }
-                return ret;
-            }
+    // 取一列
+    Vec<m, T> getCol(int col) const {
+        //assert(col < n);
+        Vec<m, T> ret;
+        for (int i = 0; i < m; i++) {
+            ret[i] = data_[i][col];
+        }
+        return ret;
+    }
 
-            // 设置一行
-            void setRow(int row, const Vec<n, T> &a) {
-                //assert(row < m);
-                for (int i = 0; i < n; i++) {
-                    data_[row][i] = a[i];
-                }
-            }
+    // 设置一行
+    void setRow(int row, const Vec<n, T> &a) {
+        //assert(row < m);
+        for (int i = 0; i < n; i++) {
+            data_[row][i] = a[i];
+        }
+    }
 
-            // 设置一列
-            void setCol(int col, const Vec<m, T> &a) {
-                //assert(col < n);
-                for (int i = 0; i < m; i++) {
-                    data_[i][col] = a[i];
-                }
-            }
+    // 设置一列
+    void setCol(int col, const Vec<m, T> &a) {
+        //assert(col < n);
+        for (int i = 0; i < m; i++) {
+            data_[i][col] = a[i];
+        }
+    }
 
-        };
+};
 
 
 //-------------------------------------------------------------------------------------------------
@@ -736,7 +748,7 @@ using Mat44d = Mat<4, 4, double>;
 using Mat34d = Mat<3, 4, double>;
 using Mat43d = Mat<4, 3, double>;
 
-using Point3d = Vec3d;	//3D point
-using Color = Vec3d;		//RGB color
+using Point3d = Vec3d;    //3D point
+using Color = Vec3d;        //RGB color
 
 #endif //TOYRAYTRACER_GEOMETRY_H
