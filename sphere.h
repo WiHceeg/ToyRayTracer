@@ -43,7 +43,7 @@ bool Sphere::hit(const Ray &ray, double t_min, double t_max, HitRecord &record) 
         }
         record.t_ = t;
         record.p_ = ray.at(record.t_);
-        Vec3d outward_normal = (record.p_ - center_) / radius_;     // 交点指向球心
+        Vec3d outward_normal = (record.p_ - center_) / radius_;     // 球心指向交点
         record.setFaceNormal(ray, outward_normal);
         record.material_ptr = material_ptr_;
 
