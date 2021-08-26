@@ -7,7 +7,7 @@
 #include "color.h"
 #include "hittable_list.h"
 #include "sphere.h"
-
+#include "material.h"
 
 #include <iostream>
 #include <fstream>
@@ -31,10 +31,16 @@ Color rayColor(const Ray &ray, const Hittable &world, int depth) {
     if (world.hit(ray, 0.001, infinity, record)) {
 //        return 0.5 * (record.normal_ + Color({1,1,1}));   // 之前直接根据撞击位置的法向量生成颜色
 //        Point3d target = record.p_ + record.normal_ + randomInUnitSphere();   // 8.2 引入漫反射，随机点
-        Point3d target = record.p_ + record.normal_ + randomUnitVector();   // 8.5 真正的朗伯反射。1.更改后阴影不那么明显；2.更改后两个球体都更加明亮了。这两个变化都是由于光线的散射更加均匀，朝法线散射的光线更少。
+//        Point3d target = record.p_ + record.normal_ + randomUnitVector();   // 8.5 真正的朗伯反射。1.更改后阴影不那么明显；2.更改后两个球体都更加明亮了。这两个变化都是由于光线的散射更加均匀，朝法线散射的光线更少。
 //        Point3d target = record.p_ + randomInHemisphere(record.normal_);    // 8.6 在法向量的半球均匀反射。许多第一批射线追踪论文都使用这种扩散方法（在采用朗伯散射之前）
 
-        return 0.5 * rayColor(Ray(record.p_, target - record.p_), world, depth - 1);
+        Ray scattered;
+        Vec3d attenuation;
+        if (record.material_ptr->scatter(ray, record, attenuation, scattered)) {
+            return componentWiseProduct(attenuation, rayColor(scattered, world, depth - 1));
+        }
+        return Color({0, 0, 0});
+
 
     } else {
         // 没击中，背景色
@@ -47,7 +53,7 @@ Color rayColor(const Ray &ray, const Hittable &world, int depth) {
 
 
 int main() {
-    ofstream output("image8.6.ppm");
+    ofstream output("image9.5.ppm");
 
     // Image
     constexpr double aspect_ratio = 16.0 / 9.0;
@@ -58,8 +64,15 @@ int main() {
 
     // World
     HittableList world;
-    world.add(make_shared<Sphere>(Point3d({0, 0, -1}), 0.5));
-    world.add(make_shared<Sphere>(Point3d({0, -100.5, -1}), 100));    // 下半部分的大球
+    shared_ptr<Material> material_ground = make_shared<Lambertian>(Color({0.8, 0.8, 0.0}));
+    shared_ptr<Material> material_center = make_shared<Lambertian>(Color({0.7, 0.3, 0.3}));
+    shared_ptr<Material> material_left = make_shared<Metal>(Color({0.8, 0.8, 0.8}));
+    shared_ptr<Material> material_right = make_shared<Metal>(Color({0.8, 0.6, 0.2}));
+
+    world.add(make_shared<Sphere>(Point3d({0.0, -100.5, -1.0}), 100.0, material_ground));
+    world.add(make_shared<Sphere>(Point3d({0.0, 0.0, -1.0}), 0.5, material_center));
+    world.add(make_shared<Sphere>(Point3d({-1.0, 0.0, -1.0}), 0.5, material_left));
+    world.add(make_shared<Sphere>(Point3d({1.0, 0.0, -1.0}), 0.5, material_right));
 
 
     // Camera

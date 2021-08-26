@@ -7,7 +7,7 @@
 
 #include "toy_ray_tracer.h"
 
-class Material;
+class Material;     // 类互相引用，用前置声明
 
 
 // 光线与物体的碰撞记录。包括碰撞位置，法向量，时间，是否表面外
