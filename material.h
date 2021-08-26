@@ -27,7 +27,7 @@ public:
                          Ray &scattered) const override;
 
 public:
-    Vec3d albedo_;      // 反射率
+    Color albedo_;      // 反射率，其实就是颜色
 };
 
 bool Lambertian::scatter(const Ray &ray_in,
@@ -48,7 +48,7 @@ bool Lambertian::scatter(const Ray &ray_in,
 
 class Metal : public Material {
 public:
-    Metal(const Vec3d &albedo) : albedo_(albedo) {}
+    Metal(const Color &albedo, double fuzz) : albedo_(albedo), fuzz_(fuzz < 1 ? fuzz : 1.0) {}
 
     virtual bool scatter(const Ray &ray_in,
                          const HitRecord &record,
@@ -56,12 +56,13 @@ public:
                          Ray &scattered) const override;
 
 public:
-    Color albedo_;
+    Color albedo_;      // 反射率，其实就是颜色
+    double fuzz_;       // 模糊度
 };
 
 bool Metal::scatter(const Ray &ray_in, const HitRecord &record, Vec3d &attenuation, Ray &scattered) const {
     Vec3d reflected = reflect(vecNormalized(ray_in.direction()), record.normal_);
-    scattered = Ray(record.p_, reflected);
+    scattered = Ray(record.p_, reflected + fuzz_ * randomInUnitSphere());
     attenuation = albedo_;
     return (dotProduct(scattered.direction(), record.normal_) > 0);
 }
