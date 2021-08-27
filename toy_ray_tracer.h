@@ -69,9 +69,6 @@ Vec3d randomInHemisphere(const Vec3d &normal) {
         return -in_unit_sphere;
 }
 
-Vec3d reflect(const Vec3d &v, const Vec3d &n) {
-    return v + 2 * dotProduct(-v, n) * n;       // v 和 n 成钝角
-}
 
 
 #endif //TOYRAYTRACER_TOY_RAY_TRACER_H

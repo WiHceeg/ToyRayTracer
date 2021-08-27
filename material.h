@@ -67,4 +67,30 @@ bool Metal::scatter(const Ray &ray_in, const HitRecord &record, Vec3d &attenuati
     return (dotProduct(scattered.direction(), record.normal_) > 0);
 }
 
+// 原文用的 dielectric，是电介质的意思。medium 才是介质的意思
+class Medium : public Material {
+public:
+    Medium(double refractive_index) : refractive_index_(refractive_index) {}
+
+    virtual bool scatter(const Ray &ray_in,
+                         const HitRecord &record,
+                         Vec3d &attenuation,     // 衰减
+                         Ray &scattered) const override;
+
+public:
+    double refractive_index_;   // 折射率
+};
+
+bool Medium::scatter(const Ray &ray_in, const HitRecord &record, Vec3d &attenuation, Ray &scattered) const {
+    attenuation = Color({1.0, 1.0, 1.0});
+    double refraction_ratio = record.front_face_ ? (1.0 / refractive_index_) : refractive_index_;
+
+    Vec3d unit_direction = vecNormalized(ray_in.direction());
+    Vec3d refracted = refract(unit_direction, record.normal_, refraction_ratio);
+
+    scattered = Ray(record.p_, refracted);
+    return true;
+
+}
+
 #endif //TOYRAYTRACER_MATERIAL_H

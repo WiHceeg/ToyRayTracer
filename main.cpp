@@ -37,10 +37,12 @@ Color rayColor(const Ray &ray, const Hittable &world, int depth) {
         Ray scattered;
         Vec3d attenuation;
         if (record.material_ptr->scatter(ray, record, attenuation, scattered)) {
+            // 之前有个疑问，attenuation 为什么而不是 0.5，后来想明白了，因为每次反射的颜色都不一样，所以把这些颜色都乘起来才对
             return componentWiseProduct(attenuation, rayColor(scattered, world, depth - 1));
+        } else {
+            // 这里特指 Metal 的 scatter 方向往球里面去了
+            return Color({0, 0, 0});
         }
-        return Color({0, 0, 0});
-
 
     } else {
         // 没击中，背景色
@@ -53,7 +55,7 @@ Color rayColor(const Ray &ray, const Hittable &world, int depth) {
 
 
 int main() {
-    ofstream output("image9.6.ppm");
+    ofstream output("image10.2.ppm");
 
     // Image
     constexpr double aspect_ratio = 16.0 / 9.0;
@@ -64,10 +66,10 @@ int main() {
 
     // World
     HittableList world;
-    shared_ptr<Material> material_ground = make_shared<Lambertian>(Color({0.8, 0.8, 0.0}));
-    shared_ptr<Material> material_center = make_shared<Lambertian>(Color({0.7, 0.3, 0.3}));
-    shared_ptr<Material> material_left = make_shared<Metal>(Color({0.8, 0.8, 0.8}), 0.3);
-    shared_ptr<Material> material_right = make_shared<Metal>(Color({0.8, 0.6, 0.2}), 1.0);
+    shared_ptr<Lambertian> material_ground = make_shared<Lambertian>(Color({0.8, 0.8, 0.0}));
+    shared_ptr<Medium> material_center = make_shared<Medium>(1.5);
+    shared_ptr<Medium> material_left = make_shared<Medium>(1.5);
+    shared_ptr<Metal> material_right = make_shared<Metal>(Color({0.8, 0.6, 0.2}), 1.0);
 
     world.add(make_shared<Sphere>(Point3d({0.0, -100.5, -1.0}), 100.0, material_ground));
     world.add(make_shared<Sphere>(Point3d({0.0, 0.0, -1.0}), 0.5, material_center));
