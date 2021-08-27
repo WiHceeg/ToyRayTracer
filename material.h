@@ -85,24 +85,19 @@ bool Medium::scatter(const Ray &ray_in, const HitRecord &record, Vec3d &attenuat
     attenuation = Color({1.0, 1.0, 1.0});
     double refraction_ratio = record.front_face_ ? (1.0 / refractive_index_) : refractive_index_;
 
-//    Vec3d incident_direction = vecNormalized(ray_in.direction());
-//
-//    double cos_theta_i = min<double>(dotProduct(-incident_direction, record.normal_), 1.0);
-//    double sin_theta_i = sqrt(1.0 - cos_theta_i * cos_theta_i);
-//
-//    bool can_refract = refraction_ratio * sin_theta_i < 1.0;
-//    Vec3d out_direction;
-//    if (can_refract) {
-//        out_direction = refract(incident_direction, record.normal_, refraction_ratio);
-//    } else {
-//        out_direction = reflect(incident_direction, record.normal_);
-//    }
-//    scattered = Ray(record.p_, out_direction);
+    Vec3d incident_direction = vecNormalized(ray_in.direction());
 
-    Vec3d unit_direction = vecNormalized(ray_in.direction());
-    Vec3d refracted = refract(unit_direction, record.normal_, refraction_ratio);
+    double cos_theta_i = min<double>(dotProduct(-incident_direction, record.normal_), 1.0);
+    double sin_theta_i = sqrt(1.0 - cos_theta_i * cos_theta_i);
 
-    scattered = Ray(record.p_, refracted);
+    bool can_refract = refraction_ratio * sin_theta_i < 1.0;
+    Vec3d out_direction;
+    if (can_refract) {
+        out_direction = refract(incident_direction, record.normal_, refraction_ratio);
+    } else {
+        out_direction = reflect(incident_direction, record.normal_);
+    }
+    scattered = Ray(record.p_, out_direction);
 
     return true;
 }

@@ -55,7 +55,7 @@ Color rayColor(const Ray &ray, const Hittable &world, int depth) {
 
 
 int main() {
-    ofstream output("image10.2_using10.3world.ppm");
+    ofstream output("image10.3.ppm");
 
     // Image
     constexpr double aspect_ratio = 16.0 / 9.0;
