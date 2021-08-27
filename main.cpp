@@ -55,7 +55,7 @@ Color rayColor(const Ray &ray, const Hittable &world, int depth) {
 
 
 int main() {
-    ofstream output("image10.2.ppm");
+    ofstream output("image10.2_using10.3world.ppm");
 
     // Image
     constexpr double aspect_ratio = 16.0 / 9.0;
@@ -67,9 +67,9 @@ int main() {
     // World
     HittableList world;
     shared_ptr<Lambertian> material_ground = make_shared<Lambertian>(Color({0.8, 0.8, 0.0}));
-    shared_ptr<Medium> material_center = make_shared<Medium>(1.5);
+    shared_ptr<Lambertian> material_center = make_shared<Lambertian>(Color({0.1, 0.2, 0.5}));
     shared_ptr<Medium> material_left = make_shared<Medium>(1.5);
-    shared_ptr<Metal> material_right = make_shared<Metal>(Color({0.8, 0.6, 0.2}), 1.0);
+    shared_ptr<Metal> material_right = make_shared<Metal>(Color({0.8, 0.6, 0.2}), 0.0);
 
     world.add(make_shared<Sphere>(Point3d({0.0, -100.5, -1.0}), 100.0, material_ground));
     world.add(make_shared<Sphere>(Point3d({0.0, 0.0, -1.0}), 0.5, material_center));
