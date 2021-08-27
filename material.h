@@ -90,6 +90,8 @@ bool Medium::scatter(const Ray &ray_in, const HitRecord &record, Vec3d &attenuat
     double cos_theta_i = min<double>(dotProduct(-incident_direction, record.normal_), 1.0);
     double sin_theta_i = sqrt(1.0 - cos_theta_i * cos_theta_i);
 
+    // 考虑能不能折射，也就是全内反射的情况
+    // 值得注意的是，之所以 10.3 和 10.2 用 10.3 的世界没区别，是因为从外面进球里面的光肯定不会发生全内反射，光路可逆
     bool can_refract = refraction_ratio * sin_theta_i < 1.0;
     Vec3d out_direction;
     if (can_refract) {
