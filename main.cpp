@@ -55,7 +55,7 @@ Color rayColor(const Ray &ray, const Hittable &world, int depth) {
 
 
 int main() {
-    ofstream output("image10.3.ppm");
+    ofstream output("image10.5.ppm");
 
     // Image
     constexpr double aspect_ratio = 16.0 / 9.0;
@@ -74,6 +74,7 @@ int main() {
     world.add(make_shared<Sphere>(Point3d({0.0, -100.5, -1.0}), 100.0, material_ground));
     world.add(make_shared<Sphere>(Point3d({0.0, 0.0, -1.0}), 0.5, material_center));
     world.add(make_shared<Sphere>(Point3d({-1.0, 0.0, -1.0}), 0.5, material_left));
+    world.add(make_shared<Sphere>(Point3d({-1.0, 0.0, -1.0}), -0.4, material_left));    // 负半径，几何形状不受影响，但表面法线会指向内部。可以用来制作空心玻璃球。
     world.add(make_shared<Sphere>(Point3d({1.0, 0.0, -1.0}), 0.5, material_right));
 
 

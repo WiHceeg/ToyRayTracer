@@ -79,6 +79,12 @@ public:
 
 public:
     double refractive_index_;   // 折射率
+
+private:
+    // 静态成员函数主要为了调用方便，不需要生成对象就能调用。
+    // 函数的行为对所有派生类都一致时，可以声明为静态。
+    // 静态成员函数的作用基本上相当于：一个带有命名空间的全局函数。
+    static double reflectance(double cosine, double ref_idx);
 };
 
 bool Medium::scatter(const Ray &ray_in, const HitRecord &record, Vec3d &attenuation, Ray &scattered) const {
@@ -94,8 +100,13 @@ bool Medium::scatter(const Ray &ray_in, const HitRecord &record, Vec3d &attenuat
     // 值得注意的是，之所以 10.3 和 10.2 用 10.3 的世界没区别，是因为从外面进球里面的光肯定不会发生全内反射，光路可逆
     bool can_refract = refraction_ratio * sin_theta_i < 1.0;
     Vec3d out_direction;
+    // 能折射的时候按 Schlick 近似反射率反射；不能折射的时候全反射。（这样逻辑会比教程清晰一些）
     if (can_refract) {
-        out_direction = refract(incident_direction, record.normal_, refraction_ratio);
+        if (reflectance(cos_theta_i, refraction_ratio) > randomDouble()) {
+            out_direction = reflect(incident_direction, record.normal_);
+        } else {
+            out_direction = refract(incident_direction, record.normal_, refraction_ratio);
+        }
     } else {
         out_direction = reflect(incident_direction, record.normal_);
     }
@@ -103,5 +114,14 @@ bool Medium::scatter(const Ray &ray_in, const HitRecord &record, Vec3d &attenuat
 
     return true;
 }
+
+// 真实的玻璃具有随角度变化的反射率—以陡峭的角度看窗户，它将变成一面镜子。Schlick 近似
+double Medium::reflectance(double cosine, double ref_idx) {
+    // Use Schlick's approximation for reflectance.
+    double r0 = (1 - ref_idx) / (1 + ref_idx);
+    r0 = r0 * r0;
+    return r0 + (1 - r0) * pow((1 - cosine), 5);
+}
+
 
 #endif //TOYRAYTRACER_MATERIAL_H
