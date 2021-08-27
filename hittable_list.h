@@ -39,6 +39,7 @@ bool HittableList::hit(const Ray &ray, double t_min, double t_max, HitRecord &re
     bool hit_anything = false;
     double closest_so_far = t_max;  // 找到 objects 里最早碰撞的 object
 
+    // 每一个物体都要计算是否会被光线命中
     for (const auto &object : objects_) {
         if (object->hit(ray, t_min, closest_so_far, temp_rec)) {
             hit_anything = true;
