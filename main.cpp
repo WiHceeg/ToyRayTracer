@@ -55,7 +55,7 @@ Color rayColor(const Ray &ray, const Hittable &world, int depth) {
 
 
 int main() {
-    ofstream output("image11.2_A_distant_view.ppm");
+    ofstream output("image11.2_fov20.ppm");
 
     // Image
     constexpr double aspect_ratio = 16.0 / 9.0;
@@ -79,7 +79,7 @@ int main() {
 
 
     // Camera
-    Camera cam(Point3d({-2.0, 2.0, 1.0}), Point3d({0, 0, -1.0}), Vec3d({0, 1.0, 0}), 90.0, aspect_ratio);
+    Camera cam(Point3d({-2.0, 2.0, 1.0}), Point3d({0, 0, -1.0}), Vec3d({0, 1.0, 0}), 20.0, aspect_ratio);
 
     //Render
     output << format("P3\n{} {}\n255\n", image_width, image_height);
