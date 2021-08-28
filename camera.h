@@ -9,10 +9,13 @@
 
 class Camera {
 public:
-    Camera() {
-        double aspect_ratio = 16.0 / 9.0;
-        double viewport_height = 2.0;
+    Camera(double vfov,     // vertical field-of-view in degrees
+           double aspect_ratio) {
+        double theta = degreesToRadians(vfov);
+        double h = tan(theta / 2);
+        double viewport_height = 2.0 * h;
         double viewport_width = aspect_ratio * viewport_height;
+
         double focal_length = 1.0;
 
         origin_ = Point3d({0, 0, 0});

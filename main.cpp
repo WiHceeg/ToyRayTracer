@@ -55,7 +55,7 @@ Color rayColor(const Ray &ray, const Hittable &world, int depth) {
 
 
 int main() {
-    ofstream output("image10.5.ppm");
+    ofstream output("image11.1.ppm");
 
     // Image
     constexpr double aspect_ratio = 16.0 / 9.0;
@@ -64,22 +64,32 @@ int main() {
     constexpr int samples_per_pixel = 100;
     constexpr int max_depth = 50;
 
+//    // World
+//    HittableList world;
+//    shared_ptr<Lambertian> material_ground = make_shared<Lambertian>(Color({0.8, 0.8, 0.0}));
+//    shared_ptr<Lambertian> material_center = make_shared<Lambertian>(Color({0.1, 0.2, 0.5}));
+//    shared_ptr<Medium> material_left = make_shared<Medium>(1.5);
+//    shared_ptr<Metal> material_right = make_shared<Metal>(Color({0.8, 0.6, 0.2}), 0.0);
+//
+//    world.add(make_shared<Sphere>(Point3d({0.0, -100.5, -1.0}), 100.0, material_ground));
+//    world.add(make_shared<Sphere>(Point3d({0.0, 0.0, -1.0}), 0.5, material_center));
+//    world.add(make_shared<Sphere>(Point3d({-1.0, 0.0, -1.0}), 0.5, material_left));
+//    world.add(make_shared<Sphere>(Point3d({-1.0, 0.0, -1.0}), -0.4, material_left));    // 负半径，几何形状不受影响，但表面法线会指向内部。可以用来制作空心玻璃球。
+//    world.add(make_shared<Sphere>(Point3d({1.0, 0.0, -1.0}), 0.5, material_right));
+
+
     // World
+    double R = cos(pi / 4);
     HittableList world;
-    shared_ptr<Lambertian> material_ground = make_shared<Lambertian>(Color({0.8, 0.8, 0.0}));
-    shared_ptr<Lambertian> material_center = make_shared<Lambertian>(Color({0.1, 0.2, 0.5}));
-    shared_ptr<Medium> material_left = make_shared<Medium>(1.5);
-    shared_ptr<Metal> material_right = make_shared<Metal>(Color({0.8, 0.6, 0.2}), 0.0);
 
-    world.add(make_shared<Sphere>(Point3d({0.0, -100.5, -1.0}), 100.0, material_ground));
-    world.add(make_shared<Sphere>(Point3d({0.0, 0.0, -1.0}), 0.5, material_center));
-    world.add(make_shared<Sphere>(Point3d({-1.0, 0.0, -1.0}), 0.5, material_left));
-    world.add(make_shared<Sphere>(Point3d({-1.0, 0.0, -1.0}), -0.4, material_left));    // 负半径，几何形状不受影响，但表面法线会指向内部。可以用来制作空心玻璃球。
-    world.add(make_shared<Sphere>(Point3d({1.0, 0.0, -1.0}), 0.5, material_right));
+    auto material_left = make_shared<Lambertian>(Color({0, 0, 1}));
+    auto material_right = make_shared<Lambertian>(Color({1, 0, 0}));
 
+    world.add(make_shared<Sphere>(Point3d({-R, 0, -1}), R, material_left));
+    world.add(make_shared<Sphere>(Point3d({R, 0, -1}), R, material_right));
 
     // Camera
-    Camera cam;
+    Camera cam(90.0, aspect_ratio);
 
     //Render
     output << format("P3\n{} {}\n255\n", image_width, image_height);
