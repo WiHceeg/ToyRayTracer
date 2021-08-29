@@ -55,7 +55,7 @@ Color rayColor(const Ray &ray, const Hittable &world, int depth) {
 
 
 int main() {
-    ofstream output("image11.2_fov20.ppm");
+    ofstream output("image12.2.ppm");
 
     // Image
     constexpr double aspect_ratio = 16.0 / 9.0;
@@ -74,12 +74,19 @@ int main() {
     world.add(make_shared<Sphere>(Point3d({0.0, -100.5, -1.0}), 100.0, material_ground));
     world.add(make_shared<Sphere>(Point3d({0.0, 0.0, -1.0}), 0.5, material_center));
     world.add(make_shared<Sphere>(Point3d({-1.0, 0.0, -1.0}), 0.5, material_left));
-    world.add(make_shared<Sphere>(Point3d({-1.0, 0.0, -1.0}), -0.45, material_left));    // 负半径，几何形状不受影响，但表面法线会指向内部。可以用来制作空心玻璃球。
+    world.add(make_shared<Sphere>(Point3d({-1.0, 0.0, -1.0}), -0.45,
+                                  material_left));    // 负半径，几何形状不受影响，但表面法线会指向内部。可以用来制作空心玻璃球。
     world.add(make_shared<Sphere>(Point3d({1.0, 0.0, -1.0}), 0.5, material_right));
 
 
     // Camera
-    Camera cam(Point3d({-2.0, 2.0, 1.0}), Point3d({0, 0, -1.0}), Vec3d({0, 1.0, 0}), 20.0, aspect_ratio);
+    Point3d lookfrom({3, 3, 2});
+    Point3d lookat({0, 0, -1});
+    Vec3d viewup({0, 1, 0});
+    double dist_to_focus = vecModulus(lookfrom - lookat);
+    double aperture = 2.0;
+
+    Camera cam(lookfrom, lookat, viewup, 20, aspect_ratio, aperture, dist_to_focus);
 
     //Render
     output << format("P3\n{} {}\n255\n", image_width, image_height);

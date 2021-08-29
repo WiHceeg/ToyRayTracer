@@ -39,6 +39,14 @@ double randomDouble(double min, double max) {
     return min + (max - min) * randomDouble();
 }
 
+Vec2d randomVec2d() {
+    return Vec2d({randomDouble(), randomDouble()});
+}
+
+Vec2d randomVec2d(double min, double max) {
+    return Vec2d({randomDouble(min, max), randomDouble(min, max)});
+}
+
 Vec3d randomVec3d() {
     return Vec3d({randomDouble(), randomDouble(), randomDouble()});
 }
@@ -51,11 +59,22 @@ Vec3d randomVec3d(double min, double max) {
 Vec3d randomInUnitSphere() {
     while (true) {
         Vec3d p = randomVec3d(-1.0, 1.0);
-        if (vecModulusSquare(p) < 1) {
+        if (vecModulusSquare(p) < 1.0) {
             return p;
         }
     }
 }
+
+// 单位圆里的坐标
+Vec2d randomInUnitCircle() {
+    while (true) {
+        Vec2d p = randomVec2d(-1.0, 1.0);
+        if (vecModulusSquare(p) < 1.0) {
+            return p;
+        }
+    }
+}
+
 
 Vec3d randomUnitVector() {
     return vecNormalized(randomInUnitSphere());
