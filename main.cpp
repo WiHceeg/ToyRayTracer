@@ -53,38 +53,75 @@ Color rayColor(const Ray &ray, const Hittable &world, int depth) {
     }
 }
 
+HittableList randomScene() {
+    HittableList world;
+
+    // 地面
+    shared_ptr<Lambertian> ground_material = make_shared<Lambertian>(Color({0.5, 0.5, 0.5}));
+    world.add(make_shared<Sphere>(Point3d({0, -1000, 0}), 1000, ground_material));
+
+    // 随机小球
+    for (int a = -11; a < 11; a++) {
+        for (int b = -11; b < 11; b++) {
+            double choose_mat = randomDouble();
+            Point3d center({a + 0.9 * randomDouble(), 0.2, b + 0.9 * randomDouble()});
+
+            if (vecModulus(center - Point3d({4, 0.2, 0})) > 0.9) {
+                shared_ptr<Material> sphere_material;
+
+                if (choose_mat < 0.8) {
+                    // diffuse
+                    Color albedo = componentWiseProduct(randomVec3d(), randomVec3d());    // 反射率
+                    sphere_material = make_shared<Lambertian>(albedo);
+                    world.add(make_shared<Sphere>(center, 0.2, sphere_material));
+                } else if (choose_mat < 0.95) {
+                    // metal
+                    Color albedo = randomVec3d(0.5, 1);
+                    double fuzz = randomDouble(0, 0.5);
+                    sphere_material = make_shared<Metal>(albedo, fuzz);
+                    world.add(make_shared<Sphere>(center, 0.2, sphere_material));
+                } else {
+                    // glass
+                    sphere_material = make_shared<Medium>(1.5);
+                    world.add(make_shared<Sphere>(center, 0.2, sphere_material));
+                }
+            }
+        }
+    }
+
+    // 三个大球
+    auto material1 = make_shared<Medium>(1.5);
+    world.add(make_shared<Sphere>(Point3d({0, 1, 0}), 1.0, material1));
+
+    auto material2 = make_shared<Lambertian>(Color({0.4, 0.2, 0.1}));
+    world.add(make_shared<Sphere>(Point3d({-4, 1, 0}), 1.0, material2));
+
+    auto material3 = make_shared<Metal>(Color({0.7, 0.6, 0.5}), 0.0);
+    world.add(make_shared<Sphere>(Point3d({4, 1, 0}), 1.0, material3));
+
+    return world;
+}
 
 int main() {
-    ofstream output("image12.2.ppm");
+    ofstream output("image13.ppm");
 
     // Image
-    constexpr double aspect_ratio = 16.0 / 9.0;
-    constexpr int image_width = 400;
+    constexpr double aspect_ratio = 3.0 / 2.0;
+    constexpr int image_width = 1200;
     constexpr int image_height = static_cast<int>(image_width / aspect_ratio);
-    constexpr int samples_per_pixel = 100;
+    constexpr int samples_per_pixel = 500;
     constexpr int max_depth = 50;
 
     // World
-    HittableList world;
-    shared_ptr<Lambertian> material_ground = make_shared<Lambertian>(Color({0.8, 0.8, 0.0}));
-    shared_ptr<Lambertian> material_center = make_shared<Lambertian>(Color({0.1, 0.2, 0.5}));
-    shared_ptr<Medium> material_left = make_shared<Medium>(1.5);
-    shared_ptr<Metal> material_right = make_shared<Metal>(Color({0.8, 0.6, 0.2}), 0.0);
-
-    world.add(make_shared<Sphere>(Point3d({0.0, -100.5, -1.0}), 100.0, material_ground));
-    world.add(make_shared<Sphere>(Point3d({0.0, 0.0, -1.0}), 0.5, material_center));
-    world.add(make_shared<Sphere>(Point3d({-1.0, 0.0, -1.0}), 0.5, material_left));
-    world.add(make_shared<Sphere>(Point3d({-1.0, 0.0, -1.0}), -0.45,
-                                  material_left));    // 负半径，几何形状不受影响，但表面法线会指向内部。可以用来制作空心玻璃球。
-    world.add(make_shared<Sphere>(Point3d({1.0, 0.0, -1.0}), 0.5, material_right));
+    HittableList world = randomScene();
 
 
     // Camera
-    Point3d lookfrom({3, 3, 2});
-    Point3d lookat({0, 0, -1});
+    Point3d lookfrom({13, 2, 2});
+    Point3d lookat({0, 0, 0});
     Vec3d viewup({0, 1, 0});
-    double dist_to_focus = vecModulus(lookfrom - lookat);
-    double aperture = 2.0;
+    double dist_to_focus = 10.0;
+    double aperture = 0.1;
 
     Camera cam(lookfrom, lookat, viewup, 20, aspect_ratio, aperture, dist_to_focus);
 
@@ -106,6 +143,7 @@ int main() {
         }
         output << '\n';
     }
+    output.close();
 
     cerr << "\nDone.\n";
     return 0;
