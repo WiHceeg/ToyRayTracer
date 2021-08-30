@@ -9,9 +9,12 @@
 #include "sphere.h"
 #include "material.h"
 
+#include <thread>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <format>
+#include <chrono>
 
 using namespace std;
 
@@ -35,9 +38,9 @@ Color rayColor(const Ray &ray, const Hittable &world, int depth) {
 //        Point3d target = record.p_ + randomInHemisphere(record.normal_);    // 8.6 在法向量的半球均匀反射。许多第一批射线追踪论文都使用这种扩散方法（在采用朗伯散射之前）
 
         Ray scattered;
-        Vec3d attenuation;
+        Vec3d attenuation;  // 衰减
         if (record.material_ptr->scatter(ray, record, attenuation, scattered)) {
-            // 之前有个疑问，attenuation 为什么而不是 0.5，后来想明白了，因为每次反射的颜色都不一样，所以把这些颜色都乘起来才对
+            // 此处递归。之前有个疑问，attenuation 为什么不是 0.5，后来想明白了，因为每次反射的颜色都不一样，所以把这些颜色都乘起来才对
             return componentWiseProduct(attenuation, rayColor(scattered, world, depth - 1));
         } else {
             // 这里特指 Metal 的 scatter 方向往球里面去了
@@ -45,7 +48,7 @@ Color rayColor(const Ray &ray, const Hittable &world, int depth) {
         }
 
     } else {
-        // 没击中，背景色
+        // 没击中，背景色，这里可以理解成天空的颜色
         Vec3d unit_direction = vecNormalized(ray.direction());
         double t = 0.5 * (unit_direction.y() + 1.0);
         //线性插值
@@ -103,7 +106,7 @@ HittableList randomScene() {
 }
 
 int main() {
-    ofstream output("image13.ppm");
+    auto start_time = chrono::steady_clock::now();
 
     // Image
     constexpr double aspect_ratio = 3.0 / 2.0;
@@ -123,28 +126,70 @@ int main() {
     double dist_to_focus = 10.0;
     double aperture = 0.1;
 
-    Camera cam(lookfrom, lookat, viewup, 20, aspect_ratio, aperture, dist_to_focus);
+    Camera cam(lookfrom, lookat, viewup, 20.0, aspect_ratio, aperture, dist_to_focus);
 
-    //Render
-    output << format("P3\n{} {}\n255\n", image_width, image_height);
+    // 多线程 Render
+    int concurrent_count = static_cast<int>(thread::hardware_concurrency());
+    clog << format("{} CPU logical cores, {} threads are supported.\n\n", concurrent_count, concurrent_count);
 
-    for (int j = image_height - 1; j >= 0; j--) {
-        cerr << format("\rScanlines remaining: {} ", j) << flush;
-        for (int i = 0; i < image_width; i++) {
-            Color pixel_color({0.0, 0.0, 0.0});
-            // 引入一点随机性，每个像素求 100 次
-            for (int s = 0; s < samples_per_pixel; s++) {
-                double u = (i + randomDouble()) / (image_width - 1);
-                double v = (j + randomDouble()) / (image_height - 1);
-                Ray r = cam.getRay(u, v);
-                pixel_color += rayColor(r, world, max_depth);
+    ofstream ofs_ppm("image13_MultiThread.ppm");
+    vector<ostringstream> oss_str(concurrent_count);
+
+    ofs_ppm << format("P3\n{} {}\n255\n", image_width, image_height);
+
+    /*  定义子线程要执行的函数
+        t 这是第 t 个线程
+        j_hi 此线程渲染的最高 height
+        j_lo 此线程渲染的最低 height
+    */
+    auto thread_task = [&](int t, int j_hi, int j_lo){
+        for (int j = j_hi; j >= j_lo; j--) {
+            clog << format("Thread {} scans lines [{}, {}], now {}\n", t, j_hi, j_lo, j);
+            for (int i = 0; i < image_width; i++) {
+                Color pixel_color({0.0, 0.0, 0.0});
+                // 引入一点随机性，每个像素求 100 次
+                for (int s = 0; s < samples_per_pixel; s++) {
+                    double u = (i + randomDouble()) / (image_width - 1);
+                    double v = (j + randomDouble()) / (image_height - 1);
+                    Ray r = cam.getRay(u, v);
+                    pixel_color += rayColor(r, world, max_depth);
+                }
+                writeColor(oss_str[t], pixel_color, samples_per_pixel);
             }
-            writeColor(output, pixel_color, samples_per_pixel);
+            oss_str[t] << '\n';
         }
-        output << '\n';
-    }
-    output.close();
+        clog << format("\nThread {} scans lines [{}, {}], finished.\n\n", t, j_hi, j_lo);
+    };
 
-    cerr << "\nDone.\n";
+    vector<thread> threads;
+
+    // 任务均分
+    double hi_d, lo_d = static_cast<double>(image_height);
+    double interval = static_cast<double>(image_height) / static_cast<double>(concurrent_count);
+    int hi, lo;
+    for (int t = 0; t < concurrent_count; t++) {
+        hi_d = lo_d - 1.0;
+        lo_d = hi_d - interval + 1.0;
+        hi = static_cast<int>(round(hi_d));
+        lo = static_cast<int>(round(lo_d));
+        threads.push_back(thread(thread_task, t, hi, lo));
+    }
+
+    // 线程 join
+    for (thread& t : threads) {
+        t.join();
+    }
+
+    // 将每个线程的 ostringstream 输出到文件里
+    for (int t = 0; t < concurrent_count; t++) {
+        ofs_ppm << oss_str[t].str();
+    }
+
+    ofs_ppm.close();
+
+    auto end_time = chrono::steady_clock::now();
+    auto ms = chrono::duration_cast<chrono::milliseconds>(end_time - start_time).count();
+    clog << format("\nConcurrent task finish, cost {} s\n", ms / 1000);
+
     return 0;
 }
