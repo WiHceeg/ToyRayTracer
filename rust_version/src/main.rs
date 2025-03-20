@@ -10,6 +10,7 @@ use std::io::Write;
 use color::ColorExt;
 use glam::DVec3;
 use point3::Point3;
+use ray::ray_color;
 use ray::Ray;
 
 fn main() -> io::Result<()> {
@@ -47,7 +48,7 @@ fn main() -> io::Result<()> {
             let pixel_center = pixel00_loc + i as f64 * pixel_delta_u + j as f64 * pixel_delta_v;
             let ray_direction = pixel_center - camera_center;
             let r = Ray::new(pixel_center, ray_direction);
-            let pixel_color = r.ray_color();
+            let pixel_color = ray_color(&r);
             pixel_color.write_color(&mut writer)?;
         }
     }

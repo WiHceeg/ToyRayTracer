@@ -32,6 +32,7 @@
 *.app
 
 cpp_version/build/
+cpp_version/.vscode/
 rust_version/target/
 rust_version/output.ppm
 rust_version/Cargo.lock
