@@ -30,3 +30,8 @@
 *.exe
 *.out
 *.app
+
+cpp_version/build/
+rust_version/target/
+rust_version/output.ppm
+rust_version/Cargo.lock
