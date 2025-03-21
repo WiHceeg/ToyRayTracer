@@ -34,19 +34,3 @@ impl Ray {
     }
 }
 
-pub fn ray_color(r: &Ray, world: &dyn Hittable) -> Color {
-    // let t =  hit_sphere(&Point3::new(0., 0., -1.), 0.5, r);
-    // if t > 0. {
-    //     let N = (r.at(t) - DVec3::new(0.,0.,-1.)).normalize();
-    //     return 0.5 * (N + DVec3::splat(1.0));
-    // }
-
-    if let Some(rec) = world.hit(r, Interval::new(0., f64::INFINITY)) {
-        return 0.5 * (rec.normal + DVec3::splat(1.0));
-    }
-
-    // 没击中，背景色，这里可以理解成天空的颜色
-    let unit_direction = r.dir.normalize();
-    let a = 0.5 * (unit_direction.y + 1.0);
-    (1.0 - a) * Color::new(1.0, 1.0, 1.0) + a * config::SKY_GRADIENT
-}
