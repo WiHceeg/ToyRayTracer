@@ -6,6 +6,7 @@ mod hittable_list;
 mod point3;
 mod ray;
 mod sphere;
+mod interval;
 
 use std::fs;
 use std::io;

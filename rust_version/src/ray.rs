@@ -2,6 +2,7 @@
 use std::f64;
 
 use crate::hittable::Hittable;
+use crate::interval::Interval;
 use crate::Point3;
 use crate::color::Color;
 use crate::config;
@@ -40,7 +41,7 @@ pub fn ray_color(r: &Ray, world: &dyn Hittable) -> Color {
     //     return 0.5 * (N + DVec3::splat(1.0));
     // }
 
-    if let Some(rec) = world.hit(r, 0., f64::INFINITY) {
+    if let Some(rec) = world.hit(r, Interval::new(0., f64::INFINITY)) {
         return 0.5 * (rec.normal + DVec3::splat(1.0));
     }
 

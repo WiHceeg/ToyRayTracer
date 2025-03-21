@@ -1,5 +1,6 @@
 use crate::hit_record::HitRecord;
 use crate::hittable::Hittable;
+use crate::interval::Interval;
 use crate::point3::Point3;
 use crate::ray::Ray;
 
@@ -18,7 +19,7 @@ impl Sphere {
 }
 
 impl Hittable for Sphere {
-    fn hit(&self, r: &Ray, ray_tmin: f64, ray_tmax: f64) -> Option<HitRecord> {
+    fn hit(&self, r: &Ray, ray_t: Interval) -> Option<HitRecord> {
         let oc = self.center - r.origin();
         let a = r.direction().length_squared();
         let b = -2.0 * r.direction().dot(oc);
@@ -30,9 +31,9 @@ impl Hittable for Sphere {
 
         let sqrtd = discriminant.sqrt();
         let mut root = (-b - discriminant.sqrt()) / (2. * a);
-        if root <= ray_tmin || root >= ray_tmax {
+        if !ray_t.surrounds(root) {
             root = (-b + discriminant.sqrt()) / (2. * a);
-            if root <= ray_tmin || root >= ray_tmax {
+            if !ray_t.surrounds(root) {
                 return None;
             }
         }
