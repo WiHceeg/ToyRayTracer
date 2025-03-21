@@ -1,4 +1,5 @@
 use glam::DVec3;
+use rand::Rng;
 use std::fs;
 use std::io;
 use std::io::Write;
@@ -17,11 +18,12 @@ pub struct Camera {
     pub image_width: usize,       // Rendered image width in pixel count
     pub samples_per_pixel: usize, // Count of random samples for each pixel
 
-    image_height: usize,  // Rendered image height
-    center: Point3,       // Camera center
-    pixel00_loc: Point3,  // Location of pixel 0, 0
-    pixel_delta_u: DVec3, // Offset to pixel to the right
-    pixel_delta_v: DVec3, // Offset to pixel below
+    image_height: usize,      // Rendered image height
+    pixel_samples_scale: f64, // Color scale factor for a sum of pixel samples
+    center: Point3,           // Camera center
+    pixel00_loc: Point3,      // Location of pixel 0, 0
+    pixel_delta_u: DVec3,     // Offset to pixel to the right
+    pixel_delta_v: DVec3,     // Offset to pixel below
 }
 
 impl Camera {
@@ -42,13 +44,20 @@ impl Camera {
         for j in 0..self.image_height {
             print!("\rScanlines remaining: {} ", self.image_height - j);
             for i in 0..config::IMAGE_WIDTH {
-                let pixel_center = self.pixel00_loc
-                    + i as f64 * self.pixel_delta_u
-                    + j as f64 * self.pixel_delta_v;
-                let ray_direction = pixel_center - self.center;
-                let r = Ray::new(self.center, pixel_center);
-                let pixel_color = Camera::ray_color(&r, world);
-                pixel_color.write_color(&mut writer)?;
+                // let pixel_center = self.pixel00_loc
+                //     + i as f64 * self.pixel_delta_u
+                //     + j as f64 * self.pixel_delta_v;
+                // let ray_direction = pixel_center - self.center;
+                // let r = Ray::new(self.center, pixel_center);
+                // let pixel_color = Camera::ray_color(&r, world);
+                // pixel_color.write_color(&mut writer)?;
+
+                let mut pixel_color = Color::ZERO;
+                for _ in 0..config::SAMPLES_PER_PIXEL {
+                    let r = self.get_ray(i, j);
+                    pixel_color += Camera::ray_color(&r, world);
+                }
+                (self.pixel_samples_scale * pixel_color).write_color(&mut writer)?;
             }
         }
 
@@ -63,6 +72,9 @@ impl Camera {
         if self.image_height < 1 {
             self.image_height = 1;
         }
+
+        self.pixel_samples_scale = 1. / config::SAMPLES_PER_PIXEL as f64;
+
         self.center = DVec3::ZERO;
 
         let focal_length = 1.0;
@@ -82,8 +94,24 @@ impl Camera {
         self.pixel00_loc = viewport_upper_left + 0.5 * (self.pixel_delta_u + self.pixel_delta_v);
     }
 
-    pub fn ray_color(r: &Ray, world: &dyn Hittable) -> Color {
+    // Construct a camera ray originating from the origin and directed at randomly sampled point around the pixel location i, j.
+    fn get_ray(&self, i: usize, j: usize) -> Ray {
+        let offset = Camera::sample_square();
+        let pixel_sample = self.pixel00_loc
+            + ((i as f64 + offset.x) * self.pixel_delta_u)
+            + ((j as f64 + offset.y) * self.pixel_delta_v);
 
+        let ray_origin = self.center;
+        let ray_direction = pixel_sample - ray_origin;
+        Ray::new(ray_origin, ray_direction)
+    }
+
+    fn sample_square() -> DVec3 {
+        let mut rng = rand::rng();
+        DVec3::new(rng.random_range(-0.5..0.5), rng.random_range(-0.5..0.5), 0.)
+    }
+
+    pub fn ray_color(r: &Ray, world: &dyn Hittable) -> Color {
         if let Some(rec) = world.hit(r, Interval::new(0., f64::INFINITY)) {
             return 0.5 * (rec.normal + DVec3::splat(1.0));
         }
