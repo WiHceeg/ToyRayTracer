@@ -3,7 +3,7 @@ use crate::hittable::Hittable;
 use crate::point3::Point3;
 use crate::ray::Ray;
 
-struct Sphere {
+pub struct Sphere {
     center: Point3,
     radius: f64,
 }
