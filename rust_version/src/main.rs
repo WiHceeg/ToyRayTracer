@@ -5,6 +5,7 @@ mod ray;
 mod sphere;
 mod hit_record;
 mod hittable;
+mod hittable_list;
 
 use std::fs;
 use std::io;
