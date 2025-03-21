@@ -2,6 +2,9 @@ mod color;
 mod config;
 mod point3;
 mod ray;
+mod sphere;
+mod hit_record;
+mod hittable;
 
 use std::fs;
 use std::io;
