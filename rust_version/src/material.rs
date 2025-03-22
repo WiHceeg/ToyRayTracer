@@ -1,3 +1,5 @@
+use std::cmp;
+
 use glam::DVec3;
 
 use crate::color::Color;
@@ -72,9 +74,19 @@ impl Material for Dielectric {
         let attenuation = Color::ONE;
         let ri = if rec.front_face { 1. / self.refraction_index} else {self.refraction_index};
 
-        let unit_direction = r_in.direction().normalize();
-        let refracted = unit_direction.refract(rec.normal, ri);
-        let scattered = Ray::new(rec.p, refracted);
+        let unit_r_in_direction = r_in.direction().normalize();
+
+        let cos_theta = (-unit_r_in_direction).dot(rec.normal).min(1.);
+        let sin_theta = (1. - cos_theta * cos_theta).sqrt();
+
+        let cannot_refract = ri * sin_theta > 1.;
+        let r_out_direction = if cannot_refract {
+            unit_r_in_direction.reflect(rec.normal)
+        } else {
+            unit_r_in_direction.refract(rec.normal, ri)
+        };
+
+        let scattered = Ray::new(rec.p, r_out_direction);
         Some((attenuation, scattered))
     }
 }
