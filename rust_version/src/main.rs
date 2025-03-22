@@ -33,6 +33,8 @@ fn main() -> io::Result<()> {
     let mut cam = Camera::default();
     cam.aspect_ratio = config::ASPECT_RATIO;
     cam.image_width = config::IMAGE_WIDTH;
+    cam.samples_per_pixel = config::SAMPLES_PER_PIXEL;
+    cam.max_depth = config::MAX_DEPTH;
     cam.render(&world)
 
 
