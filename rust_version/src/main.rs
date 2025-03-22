@@ -9,6 +9,7 @@ mod ray;
 mod sphere;
 mod interval;
 mod camera;
+mod dvec3;
 
 use std::fs;
 use std::io;

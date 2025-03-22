@@ -7,6 +7,7 @@ use std::io::Write;
 use crate::color::Color;
 use crate::color::ColorExt;
 use crate::config;
+use crate::dvec3::DVec3Ext;
 use crate::hittable::Hittable;
 use crate::interval::Interval;
 use crate::point3::Point3;
@@ -113,7 +114,9 @@ impl Camera {
 
     pub fn ray_color(r: &Ray, world: &dyn Hittable) -> Color {
         if let Some(rec) = world.hit(r, Interval::new(0., f64::INFINITY)) {
-            return 0.5 * (rec.normal + DVec3::splat(1.0));
+            let direction = DVec3::random_on_hemisphere(&rec.normal);
+            // 0.5，漫反射击中点向外半球的随机向量
+            return 0.5 * Camera::ray_color(&Ray::new(rec.p, direction), world);
         }
 
         // 没击中，背景色，这里可以理解成天空的颜色
