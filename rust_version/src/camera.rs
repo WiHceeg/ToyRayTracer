@@ -3,6 +3,7 @@ use rand::Rng;
 use std::fs;
 use std::io;
 use std::io::Write;
+use std::time;
 
 use crate::color::Color;
 use crate::color::ColorExt;
@@ -30,6 +31,7 @@ pub struct Camera {
 
 impl Camera {
     pub fn render(&mut self, world: &dyn Hittable) -> io::Result<()> {
+        let start_time = time::Instant::now();
         self.initialize();
 
         let file = fs::File::create("output.ppm")?;
@@ -64,7 +66,8 @@ impl Camera {
 
         writer.flush()?;
         print!("\rDone.                 \n");
-
+        let duration = start_time.elapsed();
+        println!("cost {:?}.", duration);
         Ok(())
     }
 
@@ -118,7 +121,7 @@ impl Camera {
         }
 
         if let Some(rec) = world.hit(r, Interval::new(config::RAY_MIN_DISTANCE, f64::INFINITY)) {
-            let direction = DVec3::random_on_hemisphere(&rec.normal);
+            let direction = rec.normal + DVec3::random_unit();
             // 0.5，漫反射击中点向外半球的随机向量
             return 0.5 * Camera::ray_color(&Ray::new(rec.p, direction), depth - 1, world);
         }

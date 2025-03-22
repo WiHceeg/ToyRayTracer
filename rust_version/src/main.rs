@@ -36,7 +36,5 @@ fn main() -> io::Result<()> {
     cam.samples_per_pixel = config::SAMPLES_PER_PIXEL;
     cam.max_depth = config::MAX_DEPTH;
     cam.render(&world)
-
-
-
+    
 }
