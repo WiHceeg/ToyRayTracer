@@ -1,19 +1,24 @@
+use std::sync::Arc;
+
 use crate::hit_record::HitRecord;
 use crate::hittable::Hittable;
 use crate::interval::Interval;
+use crate::material::Material;
 use crate::point3::Point3;
 use crate::ray::Ray;
 
 pub struct Sphere {
     center: Point3,
     radius: f64,
+    mat: Arc<dyn Material>,
 }
 
 impl Sphere {
-    pub fn new(center: Point3, radius: f64) -> Sphere {
+    pub fn new(center: Point3, radius: f64, mat: Arc<dyn Material>) -> Sphere {
         Sphere {
             center: center,
             radius: radius.max(0.),
+            mat: mat,
         }
     }
 }
@@ -39,12 +44,9 @@ impl Hittable for Sphere {
         }
 
         let p = r.at(root);
-
-        let mut rec = HitRecord::default();
-        rec.t = root;
-        rec.p = r.at(rec.t);
-        let outward_normal = (rec.p - self.center) / self.radius;
-        rec.set_face_normal(r, &outward_normal);
+        let outward_normal = (p - self.center) / self.radius;
+        
+        let rec = HitRecord::with_hit_data(root, p, r, &outward_normal, self.mat.clone());
         Some(rec)
     }
 }

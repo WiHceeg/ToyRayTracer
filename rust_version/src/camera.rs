@@ -8,6 +8,7 @@ use std::time;
 use crate::color::Color;
 use crate::color::ColorExt;
 use crate::config;
+use crate::constant;
 use crate::dvec3::DVec3Ext;
 use crate::hittable::Hittable;
 use crate::interval::Interval;
@@ -47,14 +48,6 @@ impl Camera {
         for j in 0..self.image_height {
             print!("\rScanlines remaining: {} ", self.image_height - j);
             for i in 0..self.image_width {
-                // let pixel_center = self.pixel00_loc
-                //     + i as f64 * self.pixel_delta_u
-                //     + j as f64 * self.pixel_delta_v;
-                // let ray_direction = pixel_center - self.center;
-                // let r = Ray::new(self.center, pixel_center);
-                // let pixel_color = Camera::ray_color(&r, world);
-                // pixel_color.write_color(&mut writer)?;
-
                 let mut pixel_color = Color::ZERO;
                 for _ in 0..self.samples_per_pixel {
                     let r = self.get_ray(i, j);
@@ -120,10 +113,11 @@ impl Camera {
             return Color::ZERO;
         }
 
-        if let Some(rec) = world.hit(r, Interval::new(config::RAY_MIN_DISTANCE, f64::INFINITY)) {
-            let direction = rec.normal + DVec3::random_unit();
-            // 0.5，漫反射击中点向外半球的随机向量
-            return 0.5 * Camera::ray_color(&Ray::new(rec.p, direction), depth - 1, world);
+        if let Some(rec) = world.hit(r, Interval::new(constant::RAY_MIN_DISTANCE, f64::INFINITY)) {
+            if let Some((attenuation, scattered)) = rec.mat.scatter(r, &rec) {
+                return attenuation * Camera::ray_color(&scattered, depth - 1, world)
+            }
+            return Color::ZERO;
         }
 
         // 没击中，背景色，这里可以理解成天空的颜色

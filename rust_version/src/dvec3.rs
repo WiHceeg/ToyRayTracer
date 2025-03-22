@@ -1,11 +1,14 @@
 use glam::DVec3;
 use rand::Rng;
 
+use crate::constant;
+
 pub trait DVec3Ext {
     fn random() -> DVec3;
     fn random_range(min: f64, max: f64) -> DVec3;
     fn random_unit() -> DVec3;
     fn random_on_hemisphere(normal: &DVec3) -> DVec3;
+    fn near_zero(&self) -> bool;
 }
 
 impl DVec3Ext for DVec3 {
@@ -42,5 +45,10 @@ impl DVec3Ext for DVec3 {
         } else {
             -on_unit_sphere
         }
+    }
+    
+    fn near_zero(&self) -> bool {
+        let s = constant::NEAR_ZERO_THRESHOLD;
+        self.x.abs() < s && self.y.abs() < s && self.z.abs() < s
     }
 }
