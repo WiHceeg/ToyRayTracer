@@ -56,3 +56,25 @@ impl Material for Metal {
         }
     }
 }
+
+pub struct Dielectric {
+    refraction_index: f64, // 折射率或者折射率比例
+}
+
+impl Dielectric {
+    pub fn new(refraction_index: f64) -> Dielectric {
+        Dielectric { refraction_index: refraction_index }
+    }
+}
+
+impl Material for Dielectric {
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)> {
+        let attenuation = Color::ONE;
+        let ri = if rec.front_face { 1. / self.refraction_index} else {self.refraction_index};
+
+        let unit_direction = r_in.direction().normalize();
+        let refracted = unit_direction.refract(rec.normal, ri);
+        let scattered = Ray::new(rec.p, refracted);
+        Some((attenuation, scattered))
+    }
+}

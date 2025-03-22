@@ -22,6 +22,7 @@ use color::Color;
 use color::ColorExt;
 use glam::DVec3;
 use hittable_list::HittableList;
+use material::Dielectric;
 use material::Lambertian;
 use material::Metal;
 use point3::Point3;
@@ -33,7 +34,7 @@ fn main() -> io::Result<()> {
 
     let material_ground = Arc::new(Lambertian::new(&Color::new(0.8, 0.8, 0.0)));
     let material_center = Arc::new(Lambertian::new(&Color::new(0.1, 0.2, 0.5)));
-    let material_left = Arc::new(Metal::new(&Color::new(0.8, 0.8, 0.8),0.3));
+    let material_left = Arc::new(Dielectric::new(1.5));
     let material_right = Arc::new(Metal::new(&Color::new(0.8, 0.6, 0.2),1.0));
 
     world.add(Arc::new(Sphere::new(

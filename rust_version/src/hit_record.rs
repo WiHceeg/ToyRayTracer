@@ -9,7 +9,7 @@ use crate::ray::Ray;
 
 pub struct HitRecord {
     pub p: Point3,
-    pub normal: DVec3,
+    pub normal: DVec3,  // Sphere hit 时，会计算 normal，用 (p - center) / radius，已经被单位化了
     pub mat: Arc<dyn Material>,
     pub t: f64,
     pub front_face: bool,

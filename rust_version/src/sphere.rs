@@ -44,7 +44,7 @@ impl Hittable for Sphere {
         }
 
         let p = r.at(root);
-        let outward_normal = (p - self.center) / self.radius;
+        let outward_normal = (p - self.center) / self.radius;   // 单位化
         
         let rec = HitRecord::with_hit_data(root, p, r, &outward_normal, self.mat.clone());
         Some(rec)
