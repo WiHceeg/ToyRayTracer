@@ -67,7 +67,7 @@ impl Camera {
         writer.flush()?;
         print!("\rDone.                 \n");
         let duration = start_time.elapsed();
-        println!("cost {:?}.", duration);
+        println!("Cost {:?}.", duration);
         Ok(())
     }
 
