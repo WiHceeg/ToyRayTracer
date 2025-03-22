@@ -117,7 +117,7 @@ impl Camera {
             return Color::ZERO;
         }
 
-        if let Some(rec) = world.hit(r, Interval::new(0., f64::INFINITY)) {
+        if let Some(rec) = world.hit(r, Interval::new(config::RAY_MIN_DISTANCE, f64::INFINITY)) {
             let direction = DVec3::random_on_hemisphere(&rec.normal);
             // 0.5，漫反射击中点向外半球的随机向量
             return 0.5 * Camera::ray_color(&Ray::new(rec.p, direction), depth - 1, world);
