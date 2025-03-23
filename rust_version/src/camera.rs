@@ -21,7 +21,11 @@ pub struct Camera {
     pub image_width: usize,       // Rendered image width in pixel count
     pub samples_per_pixel: usize, // Count of random samples for each pixel
     pub max_depth: usize,         // Maximum number of ray bounces into scene
+
     pub vfov: f64,// Vertical view angle (field of view)
+    pub lookfrom: Point3,
+    pub lookat: Point3,
+    pub vup: DVec3,
 
     image_height: usize,      // Rendered image height
     pixel_samples_scale: f64, // Color scale factor for a sum of pixel samples
@@ -29,6 +33,11 @@ pub struct Camera {
     pixel00_loc: Point3,      // Location of pixel 0, 0
     pixel_delta_u: DVec3,     // Offset to pixel to the right
     pixel_delta_v: DVec3,     // Offset to pixel below
+    
+    // Camera frame basis vectors
+    u: DVec3,
+    v: DVec3,
+    w: DVec3,
 }
 
 impl Camera {
@@ -73,23 +82,31 @@ impl Camera {
 
         self.pixel_samples_scale = 1. / self.samples_per_pixel as f64;
 
-        self.center = DVec3::ZERO;
+        self.center = self.lookfrom;
 
-        let focal_length = 1.0;
+        let focal_length = (self.lookfrom - self.lookat).length();
         let theta = self.vfov.to_radians();
         let h = (theta / 2.).tan();
         let viewport_height = 2.0 * h * focal_length;
         let viewport_width = viewport_height * (self.image_width as f64 / self.image_height as f64);
 
-        let viewport_u = DVec3::new(viewport_width, 0., 0.);
-        let viewport_v = DVec3::new(0., -viewport_height, 0.);
+        // Calculate the u,v,w unit basis vectors for the camera coordinate frame.
+        self.w = (self.lookfrom - self.lookat).normalize();
+        self.u = self.vup.cross(self.w).normalize();
+        self.v = self.w.cross(self.u);
+
+        // Calculate the vectors across the horizontal and down the vertical viewport edges.
+        let viewport_u = viewport_width * self.u;    // Vector across viewport horizontal edge
+        let viewport_v = viewport_height * -self.v;  // Vector down viewport vertical edge
+
+
 
         self.pixel_delta_u = viewport_u / self.image_width as f64;
         self.pixel_delta_v = viewport_v / self.image_height as f64;
 
         // Calculate the location of the upper left pixel.
         let viewport_upper_left =
-            self.center - DVec3::new(0., 0., focal_length) - viewport_u / 2.0 - viewport_v / 2.0;
+            self.center - focal_length * self.w - viewport_u / 2.0 - viewport_v / 2.0;
         self.pixel00_loc = viewport_upper_left + 0.5 * (self.pixel_delta_u + self.pixel_delta_v);
     }
 
