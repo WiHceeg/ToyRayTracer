@@ -1,11 +1,7 @@
 
 use std::f64;
 
-use crate::hittable::Hittable;
-use crate::interval::Interval;
 use crate::Point3;
-use crate::color::Color;
-use crate::config;
 use glam::DVec3;
 
 pub struct Ray {
