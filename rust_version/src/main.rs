@@ -75,5 +75,8 @@ fn main() -> io::Result<()> {
     cam.lookat = config::LOOKAT;
     cam.vup = config::V_UP;
 
+    cam.defocus_angle = config::DEFOCUS_ANGLE;
+    cam.focus_dist = config::FOCUS_DIST;
+
     cam.render(&world)
 }

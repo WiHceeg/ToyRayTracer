@@ -22,10 +22,13 @@ pub struct Camera {
     pub samples_per_pixel: usize, // Count of random samples for each pixel
     pub max_depth: usize,         // Maximum number of ray bounces into scene
 
-    pub vfov: f64,// Vertical view angle (field of view)
+    pub vfov: f64, // Vertical view angle (field of view)
     pub lookfrom: Point3,
     pub lookat: Point3,
     pub vup: DVec3,
+
+    pub defocus_angle: f64, // Variation angle of rays through each pixel
+    pub focus_dist: f64,    // Distance from camera lookfrom point to plane of perfect focus
 
     image_height: usize,      // Rendered image height
     pixel_samples_scale: f64, // Color scale factor for a sum of pixel samples
@@ -33,7 +36,10 @@ pub struct Camera {
     pixel00_loc: Point3,      // Location of pixel 0, 0
     pixel_delta_u: DVec3,     // Offset to pixel to the right
     pixel_delta_v: DVec3,     // Offset to pixel below
-    
+
+    defocus_disk_u: DVec3, // Defocus disk horizontal radius
+    defocus_disk_v: DVec3, // Defocus disk vertical radius
+
     // Camera frame basis vectors
     u: DVec3,
     v: DVec3,
@@ -84,10 +90,9 @@ impl Camera {
 
         self.center = self.lookfrom;
 
-        let focal_length = (self.lookfrom - self.lookat).length();
         let theta = self.vfov.to_radians();
         let h = (theta / 2.).tan();
-        let viewport_height = 2.0 * h * focal_length;
+        let viewport_height = 2.0 * h * self.focus_dist;
         let viewport_width = viewport_height * (self.image_width as f64 / self.image_height as f64);
 
         // Calculate the u,v,w unit basis vectors for the camera coordinate frame.
@@ -96,18 +101,20 @@ impl Camera {
         self.v = self.w.cross(self.u);
 
         // Calculate the vectors across the horizontal and down the vertical viewport edges.
-        let viewport_u = viewport_width * self.u;    // Vector across viewport horizontal edge
-        let viewport_v = viewport_height * -self.v;  // Vector down viewport vertical edge
-
-
+        let viewport_u = viewport_width * self.u; // Vector across viewport horizontal edge
+        let viewport_v = viewport_height * -self.v; // Vector down viewport vertical edge
 
         self.pixel_delta_u = viewport_u / self.image_width as f64;
         self.pixel_delta_v = viewport_v / self.image_height as f64;
 
         // Calculate the location of the upper left pixel.
-        let viewport_upper_left =
-            self.center - focal_length * self.w - viewport_u / 2.0 - viewport_v / 2.0;
+        let viewport_upper_left = self.center - self.focus_dist * self.w - viewport_u / 2.0 - viewport_v / 2.0;
         self.pixel00_loc = viewport_upper_left + 0.5 * (self.pixel_delta_u + self.pixel_delta_v);
+
+        // Calculate the camera defocus disk basis vectors.
+        let defocus_radius = self.focus_dist * (self.defocus_angle / 2.0).to_radians().tan();
+        self.defocus_disk_u = self.u * defocus_radius;
+        self.defocus_disk_v = self.v * defocus_radius;
     }
 
     // Construct a camera ray originating from the origin and directed at randomly sampled point around the pixel location i, j.
@@ -117,7 +124,8 @@ impl Camera {
             + ((i as f64 + offset.x) * self.pixel_delta_u)
             + ((j as f64 + offset.y) * self.pixel_delta_v);
 
-        let ray_origin = self.center;
+        // 虚化原理是，从圆盘上无论哪个点往焦平面发射，一定能命中焦平面的目标点，因此焦平面最清晰
+        let ray_origin = if self.defocus_angle <= 0.0 {self.center} else {self.defocus_disk_sample()};
         let ray_direction = pixel_sample - ray_origin;
         Ray::new(ray_origin, ray_direction)
     }
@@ -125,6 +133,11 @@ impl Camera {
     fn sample_square() -> DVec3 {
         let mut rng = rand::rng();
         DVec3::new(rng.random_range(-0.5..0.5), rng.random_range(-0.5..0.5), 0.)
+    }
+
+    fn defocus_disk_sample(&self) -> Point3 {
+        let p = Point3::random_in_unit_disk();
+        self.center + p.x * self.defocus_disk_u + p.y * self.defocus_disk_v
     }
 
     pub fn ray_color(r: &Ray, depth: usize, world: &dyn Hittable) -> Color {
@@ -135,7 +148,7 @@ impl Camera {
 
         if let Some(rec) = world.hit(r, Interval::new(constant::RAY_MIN_DISTANCE, f64::INFINITY)) {
             if let Some((attenuation, scattered)) = rec.mat.scatter(r, &rec) {
-                return attenuation * Camera::ray_color(&scattered, depth - 1, world)
+                return attenuation * Camera::ray_color(&scattered, depth - 1, world);
             }
             return Color::ZERO;
         }

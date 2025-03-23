@@ -8,6 +8,7 @@ pub trait DVec3Ext {
     fn random_range(min: f64, max: f64) -> DVec3;
     fn random_unit() -> DVec3;
     fn random_on_hemisphere(normal: &DVec3) -> DVec3;
+    fn random_in_unit_disk() -> DVec3;
     fn near_zero(&self) -> bool;
 }
 
@@ -46,9 +47,19 @@ impl DVec3Ext for DVec3 {
             -on_unit_sphere
         }
     }
-    
+
     fn near_zero(&self) -> bool {
         let s = constant::NEAR_ZERO_THRESHOLD;
         self.x.abs() < s && self.y.abs() < s && self.z.abs() < s
+    }
+    
+    fn random_in_unit_disk() -> DVec3 {
+        let mut rng = rand::rng();
+        loop {
+            let p = DVec3::new(rng.random_range(-1.0..1.0), rng.random_range(-1.0..1.0), 0.0);
+            if p.length_squared() < 1.0 {
+                return p;
+            }
+        }
     }
 }
