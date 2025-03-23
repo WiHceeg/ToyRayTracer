@@ -33,6 +33,6 @@
 
 cpp_version/build/
 cpp_version/.vscode/
-rust_version/target/
-rust_version/output.ppm
-rust_version/Cargo.lock
+rust_version/in_one_weekend/target/
+rust_version/in_one_weekend/output.ppm
+rust_version/in_one_weekend/Cargo.lock
