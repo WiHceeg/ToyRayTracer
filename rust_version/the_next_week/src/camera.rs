@@ -127,7 +127,8 @@ impl Camera {
         // 虚化原理是，从圆盘上无论哪个点往焦平面发射，一定能命中焦平面的目标点，因此焦平面最清晰
         let ray_origin = if self.defocus_angle <= 0.0 {self.center} else {self.defocus_disk_sample()};
         let ray_direction = pixel_sample - ray_origin;
-        Ray::new(ray_origin, ray_direction)
+        let ray_time = rand::random::<f64>();
+        Ray::new_with_time(ray_origin, ray_direction, ray_time)
     }
 
     fn sample_square() -> DVec3 {

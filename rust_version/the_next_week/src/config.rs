@@ -4,8 +4,8 @@ use crate::color::Color;
 use crate::point3::Point3;
 
 pub const ASPECT_RATIO: f64 = 16.0 / 9.0;
-pub const IMAGE_WIDTH: usize = 1200;
-pub const SAMPLES_PER_PIXEL: usize = 500; // Count of random samples for each pixel
+pub const IMAGE_WIDTH: usize = 400;
+pub const SAMPLES_PER_PIXEL: usize = 100; // Count of random samples for each pixel
 pub const MAX_DEPTH: usize = 50; // Maximum number of ray bounces into scene
 
 pub const V_FOV: f64 = 20.0;

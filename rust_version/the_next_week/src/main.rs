@@ -18,6 +18,7 @@ use std::sync::Arc;
 use camera::Camera;
 use color::Color;
 use dvec3::DVec3Ext;
+use glam::DVec3;
 use hittable_list::HittableList;
 use material::Dielectric;
 use material::Lambertian;
@@ -31,7 +32,7 @@ fn main() -> io::Result<()> {
 
     // 地面：半径 1000，中心在 (0, -1000, 0)
     let ground_material = Arc::new(Lambertian::new(&Color::new(0.5, 0.5, 0.5)));
-    world.add(Arc::new(Sphere::new(
+    world.add(Arc::new(Sphere::new_static(
         Point3::new(0.0, -1000.0, 0.0),
         1000.0,
         ground_material,
@@ -54,17 +55,18 @@ fn main() -> io::Result<()> {
                     // 漫反射材质
                     let albedo = Color::random() * Color::random();
                     let sphere_material = Arc::new(Lambertian::new(&albedo));
-                    world.add(Arc::new(Sphere::new(center, 0.2, sphere_material)));
+                    let end_center = center + DVec3::new(0.0, rng.random_range(0.0..0.5), 0.0);
+                    world.add(Arc::new(Sphere::new_moving(center, end_center, 0.2, sphere_material)));
                 } else if choose_mat < 0.95 {
                     // 金属材质
                     let albedo = Color::random_range(0.5, 1.0);
                     let fuzz = rng.random_range(0.0..0.5);
                     let sphere_material = Arc::new(Metal::new(&albedo, fuzz));
-                    world.add(Arc::new(Sphere::new(center, 0.2, sphere_material)));
+                    world.add(Arc::new(Sphere::new_static(center, 0.2, sphere_material)));
                 } else {
                     // 介质（玻璃）
                     let sphere_material = Arc::new(Dielectric::new(1.5));
-                    world.add(Arc::new(Sphere::new(center, 0.2, sphere_material)));
+                    world.add(Arc::new(Sphere::new_static(center, 0.2, sphere_material)));
                 }
             }
         }
@@ -72,21 +74,21 @@ fn main() -> io::Result<()> {
 
     // 三个大球
     let material1 = Arc::new(Dielectric::new(1.5));
-    world.add(Arc::new(Sphere::new(
+    world.add(Arc::new(Sphere::new_static(
         Point3::new(0.0, 1.0, 0.0),
         1.0,
         material1,
     )));
 
     let material2 = Arc::new(Lambertian::new(&Color::new(0.4, 0.2, 0.1)));
-    world.add(Arc::new(Sphere::new(
+    world.add(Arc::new(Sphere::new_static(
         Point3::new(-4.0, 1.0, 0.0),
         1.0,
         material2,
     )));
 
     let material3 = Arc::new(Metal::new(&Color::new(0.7, 0.6, 0.5), 0.0));
-    world.add(Arc::new(Sphere::new(
+    world.add(Arc::new(Sphere::new_static(
         Point3::new(4.0, 1.0, 0.0),
         1.0,
         material3,
