@@ -22,6 +22,14 @@ impl Interval {
         Self { min, max }
     }
 
+    /// 紧紧包围两个区间的新区间
+    pub fn new_from_merged(a: Interval, b: Interval) -> Interval {
+        Interval {
+             min: a.min.min(b.min),
+             max: a.max.max(b.max),
+        }
+    }
+
     /// 返回区间的大小（区间长度）
     pub fn size(&self) -> f64 {
         self.max - self.min

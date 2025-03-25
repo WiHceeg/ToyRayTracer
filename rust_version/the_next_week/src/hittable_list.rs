@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use crate::aabb::Aabb;
 use crate::hit_record::HitRecord;
 use crate::hittable::Hittable;
 use crate::interval::Interval;
@@ -8,15 +9,17 @@ use crate::ray::Ray;
 
 pub struct HittableList {
     pub objects: Vec<Arc<dyn Hittable>>,
+    bbox: Aabb,
 }
 
 impl HittableList {
     pub fn new() -> Self {
-        Self { objects: Vec::new() }
+        Self { objects: Vec::new(), bbox: Aabb::EMPTY }
     }
 
     pub fn add(&mut self, object: Arc<dyn Hittable>) {
-        self.objects.push(object);
+        self.objects.push(object.clone());
+        self.bbox = Aabb::new_from_merged(self.bbox, object.bonnding_box());
     }
 
     pub fn clear(&mut self) {
@@ -36,5 +39,9 @@ impl Hittable for HittableList {
             }
         }
         hit_record
+    }
+    
+    fn bonnding_box(&self) -> Aabb {
+        self.bbox
     }
 }

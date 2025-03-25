@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use glam::DVec3;
 
+use crate::aabb::Aabb;
 use crate::hit_record::HitRecord;
 use crate::hittable::Hittable;
 use crate::interval::Interval;
@@ -13,23 +14,32 @@ pub struct Sphere {
     center: Ray,    // 默认场景假设所有动画从 t=0 开始，因此 center 的 tm 都是默认 0
     radius: f64,
     mat: Arc<dyn Material>,
+    bbox: Aabb,
 }
 
 impl Sphere {
     pub fn new_static(static_center: Point3, radius: f64, mat: Arc<dyn Material>) -> Sphere {
+        let rvec = DVec3::splat(radius);
         Sphere {
             center: Ray::new(static_center, DVec3::ZERO),
             radius: radius.max(0.),
             mat: mat,
+            bbox: Aabb::new_from_points(static_center - rvec, static_center + rvec),
         }
     }
 
     pub fn new_moving(start_center: Point3, end_center: Point3, radius: f64, mat: Arc<dyn Material>) -> Sphere {
+        let center = Ray::new(start_center, end_center - start_center);
+        let rvec = DVec3::splat(radius);
+        let start_box = Aabb::new_from_points(center.at(0.0) - rvec, center.at(0.0) + rvec);
+        let end_box = Aabb::new_from_points(center.at(1.0) - rvec, center.at(1.0) + rvec);
         Sphere {
-            center: Ray::new(start_center, end_center - start_center),
+            center: center,
             radius: radius.max(0.),
             mat: mat,
-        }   
+            bbox: Aabb::new_from_merged(start_box, end_box),
+        }
+
     }
 }
 
@@ -59,5 +69,9 @@ impl Hittable for Sphere {
 
         let rec = HitRecord::with_hit_data(root, p, r, outward_normal, self.mat.clone());
         Some(rec)
+    }
+    
+    fn bonnding_box(&self) -> crate::aabb::Aabb {
+        self.bbox
     }
 }
