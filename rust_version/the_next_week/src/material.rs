@@ -15,8 +15,8 @@ pub struct Lambertian {
 }
 
 impl Lambertian {
-    pub fn new(albedo: &Color) -> Lambertian {
-        Lambertian { albedo: *albedo }
+    pub fn new(albedo: Color) -> Lambertian {
+        Lambertian { albedo: albedo }
     }
 }
 
@@ -37,9 +37,9 @@ pub struct Metal {
     fuzz: f64,
 }
 impl Metal {
-    pub fn new(albedo: &Color, fuzz: f64) -> Metal {
+    pub fn new(albedo: Color, fuzz: f64) -> Metal {
         Metal {
-            albedo: *albedo,
+            albedo: albedo,
             fuzz: fuzz,
         }
     }

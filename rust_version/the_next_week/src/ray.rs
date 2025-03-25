@@ -27,12 +27,12 @@ impl Ray {
         }        
     }
 
-    pub fn origin(&self) -> &Point3 {
-        &self.orig
+    pub fn origin(&self) -> Point3 {
+        self.orig
     }
 
-    pub fn direction(&self) -> &DVec3 {
-        &self.dir
+    pub fn direction(&self) -> DVec3 {
+        self.dir
     }
 
     pub fn time(&self) -> f64 {

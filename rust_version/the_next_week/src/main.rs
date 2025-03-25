@@ -11,6 +11,7 @@ mod material;
 mod point3;
 mod ray;
 mod sphere;
+mod aabb;
 
 use std::io;
 use std::sync::Arc;
@@ -31,7 +32,7 @@ fn main() -> io::Result<()> {
     let mut world = HittableList::new();
 
     // 地面：半径 1000，中心在 (0, -1000, 0)
-    let ground_material = Arc::new(Lambertian::new(&Color::new(0.5, 0.5, 0.5)));
+    let ground_material = Arc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
     world.add(Arc::new(Sphere::new_static(
         Point3::new(0.0, -1000.0, 0.0),
         1000.0,
@@ -54,14 +55,14 @@ fn main() -> io::Result<()> {
                 if choose_mat < 0.8 {
                     // 漫反射材质
                     let albedo = Color::random() * Color::random();
-                    let sphere_material = Arc::new(Lambertian::new(&albedo));
+                    let sphere_material = Arc::new(Lambertian::new(albedo));
                     let end_center = center + DVec3::new(0.0, rng.random_range(0.0..0.5), 0.0);
                     world.add(Arc::new(Sphere::new_moving(center, end_center, 0.2, sphere_material)));
                 } else if choose_mat < 0.95 {
                     // 金属材质
                     let albedo = Color::random_range(0.5, 1.0);
                     let fuzz = rng.random_range(0.0..0.5);
-                    let sphere_material = Arc::new(Metal::new(&albedo, fuzz));
+                    let sphere_material = Arc::new(Metal::new(albedo, fuzz));
                     world.add(Arc::new(Sphere::new_static(center, 0.2, sphere_material)));
                 } else {
                     // 介质（玻璃）
@@ -80,14 +81,14 @@ fn main() -> io::Result<()> {
         material1,
     )));
 
-    let material2 = Arc::new(Lambertian::new(&Color::new(0.4, 0.2, 0.1)));
+    let material2 = Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
     world.add(Arc::new(Sphere::new_static(
         Point3::new(-4.0, 1.0, 0.0),
         1.0,
         material2,
     )));
 
-    let material3 = Arc::new(Metal::new(&Color::new(0.7, 0.6, 0.5), 0.0));
+    let material3 = Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0));
     world.add(Arc::new(Sphere::new_static(
         Point3::new(4.0, 1.0, 0.0),
         1.0,
