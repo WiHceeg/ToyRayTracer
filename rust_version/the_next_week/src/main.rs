@@ -1,3 +1,5 @@
+mod aabb;
+mod bvh;
 mod camera;
 mod color;
 mod config;
@@ -11,8 +13,7 @@ mod material;
 mod point3;
 mod ray;
 mod sphere;
-mod aabb;
-mod bvh;
+mod texture;
 
 use std::io;
 use std::sync::Arc;
@@ -23,22 +24,33 @@ use color::Color;
 use dvec3::DVec3Ext;
 use glam::DVec3;
 use hittable_list::HittableList;
-use material::Dielectric;
-use material::Lambertian;
-use material::Metal;
+use material::{Dielectric, Lambertian, Metal};
 use point3::Point3;
 use rand::Rng;
 use sphere::Sphere;
+use texture::CheckerTexture;
 
 fn main() -> io::Result<()> {
     let mut world = HittableList::new();
 
     // 地面：半径 1000，中心在 (0, -1000, 0)
-    let ground_material = Arc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
+    /*
+        let ground_material = Arc::new(Lambertian::new_from_solid_color(Color::new(0.5, 0.5, 0.5)));
+        world.add(Arc::new(Sphere::new_static(
+            Point3::new(0.0, -1000.0, 0.0),
+            1000.0,
+            ground_material,
+        )));
+    */
+    let checker = Arc::new(CheckerTexture::new(
+        0.32,
+        Color::new(0.2, 0.3, 0.1),
+        Color::new(0.9, 0.9, 0.9),
+    ));
     world.add(Arc::new(Sphere::new_static(
         Point3::new(0.0, -1000.0, 0.0),
         1000.0,
-        ground_material,
+        Arc::new(Lambertian::new_from_texture(checker)),
     )));
 
     let mut rng = rand::rng();
@@ -57,9 +69,14 @@ fn main() -> io::Result<()> {
                 if choose_mat < 0.8 {
                     // 漫反射材质
                     let albedo = Color::random() * Color::random();
-                    let sphere_material = Arc::new(Lambertian::new(albedo));
+                    let sphere_material = Arc::new(Lambertian::new_from_solid_color(albedo));
                     let end_center = center + DVec3::new(0.0, rng.random_range(0.0..0.5), 0.0);
-                    world.add(Arc::new(Sphere::new_moving(center, end_center, 0.2, sphere_material)));
+                    world.add(Arc::new(Sphere::new_moving(
+                        center,
+                        end_center,
+                        0.2,
+                        sphere_material,
+                    )));
                 } else if choose_mat < 0.95 {
                     // 金属材质
                     let albedo = Color::random_range(0.5, 1.0);
@@ -83,7 +100,7 @@ fn main() -> io::Result<()> {
         material1,
     )));
 
-    let material2 = Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
+    let material2 = Arc::new(Lambertian::new_from_solid_color(Color::new(0.4, 0.2, 0.1)));
     world.add(Arc::new(Sphere::new_static(
         Point3::new(-4.0, 1.0, 0.0),
         1.0,

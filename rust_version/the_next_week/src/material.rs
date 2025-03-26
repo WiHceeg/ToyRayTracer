@@ -1,3 +1,4 @@
+use std::sync::Arc;
 
 use glam::DVec3;
 
@@ -5,18 +6,25 @@ use crate::color::Color;
 use crate::dvec3::DVec3Ext;
 use crate::hit_record::HitRecord;
 use crate::ray::Ray;
+use crate::texture::{SolidColor, Texture};
 
 pub trait Material {
     fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)>;
 }
 
 pub struct Lambertian {
-    albedo: Color, // 反照率
+    tex: Arc<dyn Texture>,
 }
 
 impl Lambertian {
-    pub fn new(albedo: Color) -> Lambertian {
-        Lambertian { albedo: albedo }
+    pub fn new_from_solid_color(albedo: Color) -> Lambertian {
+        Lambertian {
+            tex: Arc::new(SolidColor::new(albedo)),
+        }
+    }
+
+    pub fn new_from_texture(tex: Arc<dyn Texture>) -> Lambertian {
+        Lambertian { tex: tex }
     }
 }
 
@@ -27,7 +35,7 @@ impl Material for Lambertian {
             scatter_direction = rec.normal;
         }
         let scattered = Ray::new_with_time(rec.p, scatter_direction, r_in.time());
-        let attenuation = self.albedo;
+        let attenuation = self.tex.value(rec.u, rec.v, rec.p);
         Some((attenuation, scattered))
     }
 }
@@ -64,21 +72,27 @@ pub struct Dielectric {
 
 impl Dielectric {
     pub fn new(refraction_index: f64) -> Dielectric {
-        Dielectric { refraction_index: refraction_index }
+        Dielectric {
+            refraction_index: refraction_index,
+        }
     }
 
     // 反射比，Use Schlick's approximation for reflectance.
     fn reflectance(cosine: f64, refraction_index: f64) -> f64 {
         let mut r0 = (1. - refraction_index) / (1. + refraction_index);
-        r0 = r0*r0;
-        r0 + (1.-r0)*(1. - cosine).powi(5)
+        r0 = r0 * r0;
+        r0 + (1. - r0) * (1. - cosine).powi(5)
     }
 }
 
 impl Material for Dielectric {
     fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)> {
         let attenuation = Color::ONE;
-        let ri = if rec.front_face { 1. / self.refraction_index} else {self.refraction_index};
+        let ri = if rec.front_face {
+            1. / self.refraction_index
+        } else {
+            self.refraction_index
+        };
 
         let unit_r_in_direction = r_in.direction().normalize();
 
@@ -86,11 +100,12 @@ impl Material for Dielectric {
         let sin_theta = (1. - cos_theta * cos_theta).sqrt();
 
         let cannot_refract = ri * sin_theta > 1.;
-        let r_out_direction = if cannot_refract || Dielectric::reflectance(cos_theta, ri) > rand::random::<f64>() {
-            unit_r_in_direction.reflect(rec.normal)
-        } else {
-            unit_r_in_direction.refract(rec.normal, ri)
-        };
+        let r_out_direction =
+            if cannot_refract || Dielectric::reflectance(cos_theta, ri) > rand::random::<f64>() {
+                unit_r_in_direction.reflect(rec.normal)
+            } else {
+                unit_r_in_direction.refract(rec.normal, ri)
+            };
 
         let scattered = Ray::new_with_time(rec.p, r_out_direction, r_in.time());
         Some((attenuation, scattered))
