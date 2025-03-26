@@ -3,8 +3,11 @@ mod bvh;
 mod camera;
 mod color;
 mod config;
+mod config_bouncing_spheres;
+mod config_checkered_spheres;
 mod constant;
 mod dvec3;
+mod enums;
 mod hit_record;
 mod hittable;
 mod hittable_list;
@@ -30,7 +33,7 @@ use rand::Rng;
 use sphere::Sphere;
 use texture::CheckerTexture;
 
-fn main() -> io::Result<()> {
+fn bouncing_spheres() -> io::Result<()> {
     let mut world = HittableList::new();
 
     // 地面：半径 1000，中心在 (0, -1000, 0)
@@ -121,18 +124,67 @@ fn main() -> io::Result<()> {
     }
 
     let mut cam = Camera::default();
-    cam.aspect_ratio = config::ASPECT_RATIO;
-    cam.image_width = config::IMAGE_WIDTH;
-    cam.samples_per_pixel = config::SAMPLES_PER_PIXEL;
-    cam.max_depth = config::MAX_DEPTH;
+    cam.aspect_ratio = config_bouncing_spheres::ASPECT_RATIO;
+    cam.image_width = config_bouncing_spheres::IMAGE_WIDTH;
+    cam.samples_per_pixel = config_bouncing_spheres::SAMPLES_PER_PIXEL;
+    cam.max_depth = config_bouncing_spheres::MAX_DEPTH;
 
-    cam.vfov = config::V_FOV;
-    cam.lookfrom = config::LOOKFROM;
-    cam.lookat = config::LOOKAT;
-    cam.vup = config::V_UP;
+    cam.vfov = config_bouncing_spheres::V_FOV;
+    cam.lookfrom = config_bouncing_spheres::LOOKFROM;
+    cam.lookat = config_bouncing_spheres::LOOKAT;
+    cam.vup = config_bouncing_spheres::V_UP;
 
-    cam.defocus_angle = config::DEFOCUS_ANGLE;
-    cam.focus_dist = config::FOCUS_DIST;
+    cam.defocus_angle = config_bouncing_spheres::DEFOCUS_ANGLE;
+    cam.focus_dist = config_bouncing_spheres::FOCUS_DIST;
 
     cam.render(&world)
+}
+
+fn checkered_spheres() -> io::Result<()> {
+    let mut world = HittableList::new();
+
+    let checker = Arc::new(CheckerTexture::new(
+        0.32,
+        Color::new(0.2, 0.3, 0.1),
+        Color::new(0.9, 0.9, 0.9),
+    ));
+    world.add(Arc::new(Sphere::new_static(
+        Point3::new(0.0, -10.0, 0.0),
+        10.0,
+        Arc::new(Lambertian::new_from_texture(checker.clone())),
+    )));
+    world.add(Arc::new(Sphere::new_static(
+        Point3::new(0.0, 10.0, 0.0),
+        10.0,
+        Arc::new(Lambertian::new_from_texture(checker)),
+    )));
+
+    if config::ENABLE_BVH {
+        let bvh_node = BvhNode::new(world);
+        world = HittableList::new();
+        world.add(Arc::new(bvh_node));
+    }
+
+    let mut cam = Camera::default();
+    cam.aspect_ratio = config_checkered_spheres::ASPECT_RATIO;
+    cam.image_width = config_checkered_spheres::IMAGE_WIDTH;
+    cam.samples_per_pixel = config_checkered_spheres::SAMPLES_PER_PIXEL;
+    cam.max_depth = config_checkered_spheres::MAX_DEPTH;
+
+    cam.vfov = config_checkered_spheres::V_FOV;
+    cam.lookfrom = config_checkered_spheres::LOOKFROM;
+    cam.lookat = config_checkered_spheres::LOOKAT;
+    cam.vup = config_checkered_spheres::V_UP;
+
+    cam.defocus_angle = config_checkered_spheres::DEFOCUS_ANGLE;
+    cam.focus_dist = config_checkered_spheres::FOCUS_DIST;
+
+    cam.render(&world)
+}
+
+fn main() -> io::Result<()> {
+    match config::TARGET_SCENE {
+        enums::Scene::BouncingSpheres => bouncing_spheres(),
+        enums::Scene::CheckeredSpheres => checkered_spheres(),
+    }
 }
