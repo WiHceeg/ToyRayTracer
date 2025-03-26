@@ -12,10 +12,12 @@ mod point3;
 mod ray;
 mod sphere;
 mod aabb;
+mod bvh;
 
 use std::io;
 use std::sync::Arc;
 
+use bvh::BvhNode;
 use camera::Camera;
 use color::Color;
 use dvec3::DVec3Ext;
@@ -94,6 +96,12 @@ fn main() -> io::Result<()> {
         1.0,
         material3,
     )));
+
+    if config::ENABLE_BVH {
+        let bvh_node = BvhNode::new(world);
+        world = HittableList::new();
+        world.add(Arc::new(bvh_node));
+    }
 
     let mut cam = Camera::default();
     cam.aspect_ratio = config::ASPECT_RATIO;

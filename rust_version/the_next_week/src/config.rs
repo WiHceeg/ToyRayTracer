@@ -17,3 +17,5 @@ pub const DEFOCUS_ANGLE: f64 = 0.6;
 pub const FOCUS_DIST: f64 = 10.0;
 
 pub const SKY_GRADIENT: Color = Color::new(0.5, 0.7, 1.0);
+
+pub const ENABLE_BVH: bool = true;

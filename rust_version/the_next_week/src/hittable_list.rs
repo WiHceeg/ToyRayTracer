@@ -18,8 +18,8 @@ impl HittableList {
     }
 
     pub fn add(&mut self, object: Arc<dyn Hittable>) {
-        self.objects.push(object.clone());
-        self.bbox = Aabb::new_from_merged(self.bbox, object.bonnding_box());
+        self.bbox = Aabb::new_from_merged(self.bbox, object.bounding_box());
+        self.objects.push(object);
     }
 
     pub fn clear(&mut self) {
@@ -41,7 +41,7 @@ impl Hittable for HittableList {
         hit_record
     }
     
-    fn bonnding_box(&self) -> Aabb {
+    fn bounding_box(&self) -> Aabb {
         self.bbox
     }
 }

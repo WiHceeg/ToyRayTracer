@@ -1,7 +1,5 @@
 use std::ops::{Index, IndexMut};
 
-use glam::DVec3;
-
 use crate::point3::Point3;
 
 use crate::interval::Interval;
@@ -24,8 +22,14 @@ impl Aabb {
         z: Interval::EMPTY,
     };
 
+    pub const UNIVERSE: Aabb = Aabb {
+        x: Interval::UNIVERSE,
+        y: Interval::UNIVERSE,
+        z: Interval::UNIVERSE,
+    };
+
     pub fn new(x: Interval, y: Interval, z: Interval) -> Aabb {
-        Aabb { x: x, y: y, z: x }
+        Aabb { x: x, y: y, z: z }
     }
 
     pub fn new_from_points(a: Point3, b: Point3) -> Aabb {
@@ -57,11 +61,22 @@ impl Aabb {
             }
             if t0 > ray_t.min {ray_t.min = t0;}
             if t1 < ray_t.max {ray_t.max = t1;}
-            if ray_t.min <= ray_t.max {
+            if ray_t.min >= ray_t.max {
                 return false;
             }
         }
         true
+    }
+
+    pub fn longest_axis(&self) -> usize {
+        let (x_size, y_size, z_size) = (self.x.size(), self.y.size(), self.z.size());
+        if x_size >= y_size && x_size >= z_size {
+            0
+        } else if y_size >= z_size {
+            1
+        } else {
+            2
+        }
     }
 }
 
@@ -88,5 +103,4 @@ impl IndexMut<usize> for Aabb {
             _ => panic!("index out of bounds"),            
         }
     }
-
 }

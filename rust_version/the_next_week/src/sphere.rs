@@ -71,7 +71,7 @@ impl Hittable for Sphere {
         Some(rec)
     }
     
-    fn bonnding_box(&self) -> crate::aabb::Aabb {
+    fn bounding_box(&self) -> crate::aabb::Aabb {
         self.bbox
     }
 }
