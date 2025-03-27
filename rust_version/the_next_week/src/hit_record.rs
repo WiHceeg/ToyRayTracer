@@ -5,6 +5,7 @@ use glam::DVec3;
 use crate::material::Material;
 use crate::point3::Point3;
 use crate::ray::Ray;
+use crate::sphere::Sphere;
 
 pub struct HitRecord {
     pub p: Point3,
@@ -24,6 +25,9 @@ impl HitRecord {
         outward_normal: DVec3,
         mat: Arc<dyn Material>,
     ) -> HitRecord {
+
+        let (u, v) = Sphere::get_sphere_uv(outward_normal);
+
         let front_face = r.direction().dot(outward_normal) < 0.;
         let normal = if front_face {
             outward_normal
@@ -35,8 +39,8 @@ impl HitRecord {
             normal: normal,
             mat: mat,
             t: t,
-            u: 0.,
-            v: 0.,
+            u: u,
+            v: v,
             front_face: front_face,
         }
     }
