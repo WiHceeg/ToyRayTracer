@@ -47,7 +47,7 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn render(&mut self, world: &dyn Hittable) -> io::Result<()> {
+    pub fn render(&mut self, world: &dyn Hittable) -> anyhow::Result<()> {
         let start_time = time::Instant::now();
         self.initialize();
 

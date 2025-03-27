@@ -5,6 +5,7 @@ mod color;
 mod config;
 mod config_bouncing_spheres;
 mod config_checkered_spheres;
+mod config_earth;
 mod constant;
 mod dvec3;
 mod enums;
@@ -18,7 +19,6 @@ mod ray;
 mod sphere;
 mod texture;
 
-use std::io;
 use std::sync::Arc;
 
 use bvh::BvhNode;
@@ -31,9 +31,9 @@ use material::{Dielectric, Lambertian, Metal};
 use point3::Point3;
 use rand::Rng;
 use sphere::Sphere;
-use texture::CheckerTexture;
+use texture::{CheckerTexture, ImageTexture};
 
-fn bouncing_spheres() -> io::Result<()> {
+fn bouncing_spheres() -> anyhow::Result<()> {
     let mut world = HittableList::new();
 
     // 地面：半径 1000，中心在 (0, -1000, 0)
@@ -140,7 +140,7 @@ fn bouncing_spheres() -> io::Result<()> {
     cam.render(&world)
 }
 
-fn checkered_spheres() -> io::Result<()> {
+fn checkered_spheres() -> anyhow::Result<()> {
     let mut world = HittableList::new();
 
     let checker = Arc::new(CheckerTexture::new(
@@ -182,9 +182,39 @@ fn checkered_spheres() -> io::Result<()> {
     cam.render(&world)
 }
 
-fn main() -> io::Result<()> {
-    match config::TARGET_SCENE {
+fn earth() -> anyhow::Result<()> {
+    let mut world = HittableList::new();
+    let earth_texture = Arc::new(ImageTexture::new("earthmap.jpg")?);
+    let earth_surface = Arc::new(Lambertian::new_from_texture(earth_texture));
+    let globe = Arc::new(Sphere::new_static(Point3::ZERO, 2.0, earth_surface));
+    world.add(globe);
+
+    let mut cam = Camera::default();
+    cam.aspect_ratio = config_earth::ASPECT_RATIO;
+    cam.image_width = config_earth::IMAGE_WIDTH;
+    cam.samples_per_pixel = config_earth::SAMPLES_PER_PIXEL;
+    cam.max_depth = config_earth::MAX_DEPTH;
+
+    cam.vfov = config_earth::V_FOV;
+    cam.lookfrom = config_earth::LOOKFROM;
+    cam.lookat = config_earth::LOOKAT;
+    cam.vup = config_earth::V_UP;
+
+    cam.defocus_angle = config_earth::DEFOCUS_ANGLE;
+    cam.focus_dist = config_earth::FOCUS_DIST;
+
+    cam.render(&world)
+}
+
+fn main() {
+    let res = match config::TARGET_SCENE {
         enums::Scene::BouncingSpheres => bouncing_spheres(),
         enums::Scene::CheckeredSpheres => checkered_spheres(),
+        enums::Scene::Earth => earth(),
+    };
+
+    match res {
+        Ok(_) => (),
+        Err(e) => eprintln!("Error: {}", e),
     }
 }
