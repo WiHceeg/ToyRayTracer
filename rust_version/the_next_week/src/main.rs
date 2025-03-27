@@ -6,6 +6,7 @@ mod config;
 mod config_bouncing_spheres;
 mod config_checkered_spheres;
 mod config_earth;
+mod config_perlin_spheres;
 mod constant;
 mod dvec3;
 mod enums;
@@ -14,6 +15,7 @@ mod hittable;
 mod hittable_list;
 mod interval;
 mod material;
+mod perlin;
 mod point3;
 mod ray;
 mod sphere;
@@ -31,7 +33,7 @@ use material::{Dielectric, Lambertian, Metal};
 use point3::Point3;
 use rand::Rng;
 use sphere::Sphere;
-use texture::{CheckerTexture, ImageTexture};
+use texture::{CheckerTexture, ImageTexture, NoiseTexture};
 
 fn bouncing_spheres() -> anyhow::Result<()> {
     let mut world = HittableList::new();
@@ -206,11 +208,43 @@ fn earth() -> anyhow::Result<()> {
     cam.render(&world)
 }
 
+fn perlin_spheres() -> anyhow::Result<()> {
+    let mut world = HittableList::new();
+    let texture = Arc::new(NoiseTexture::new());
+
+    world.add(Arc::new(Sphere::new_static(
+        Point3::new(0.0, -1000.0, 0.0),
+        1000.0,
+        Arc::new(Lambertian::new_from_texture(texture.clone())),
+    )));
+    world.add(Arc::new(Sphere::new_static(
+        Point3::new(0.0, 2.0, 0.0),
+        2.0,
+        Arc::new(Lambertian::new_from_texture(texture)),
+    )));
+    let mut cam = Camera::default();
+    cam.aspect_ratio = config_perlin_spheres::ASPECT_RATIO;
+    cam.image_width = config_perlin_spheres::IMAGE_WIDTH;
+    cam.samples_per_pixel = config_perlin_spheres::SAMPLES_PER_PIXEL;
+    cam.max_depth = config_perlin_spheres::MAX_DEPTH;
+
+    cam.vfov = config_perlin_spheres::V_FOV;
+    cam.lookfrom = config_perlin_spheres::LOOKFROM;
+    cam.lookat = config_perlin_spheres::LOOKAT;
+    cam.vup = config_perlin_spheres::V_UP;
+
+    cam.defocus_angle = config_perlin_spheres::DEFOCUS_ANGLE;
+    cam.focus_dist = config_perlin_spheres::FOCUS_DIST;
+
+    cam.render(&world)
+}
+
 fn main() {
     let res = match config::TARGET_SCENE {
         enums::Scene::BouncingSpheres => bouncing_spheres(),
         enums::Scene::CheckeredSpheres => checkered_spheres(),
         enums::Scene::Earth => earth(),
+        enums::Scene::PerlinSpheres => perlin_spheres(),
     };
 
     match res {

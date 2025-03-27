@@ -4,6 +4,7 @@ use image::RgbImage;
 
 use crate::color::Color;
 use crate::interval::Interval;
+use crate::perlin::Perlin;
 use crate::point3::Point3;
 
 pub trait Texture {
@@ -77,5 +78,24 @@ impl Texture for ImageTexture {
         let pixel = self.data.get_pixel(i, j);
         let color_scale = 1.0/255.0;
         Color::new(color_scale * pixel[0] as f64, color_scale * pixel[1] as f64, color_scale * pixel[2] as f64)
+    }
+}
+
+
+pub struct NoiseTexture {
+    noise: Perlin,
+}
+
+impl NoiseTexture {
+    pub fn new() -> NoiseTexture {
+        NoiseTexture {
+            noise: Perlin::new(),
+        }
+    }
+}
+
+impl Texture for NoiseTexture {
+    fn value(&self, _u: f64, _v: f64, p: Point3) -> Color {
+        Color::new(1.0, 1.0, 1.0) * self.noise.noise(p)
     }
 }
