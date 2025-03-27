@@ -3,6 +3,7 @@ use crate::point3::Point3;
 use crate::enums::NoiseType;
 
 pub const NOISE_TYPE: NoiseType = NoiseType::TrilinearInterpolation;
+pub const HERMITE_CUBIC_SMOOTHED: bool = true;
 
 pub const ASPECT_RATIO: f64 = 16.0 / 9.0;
 pub const IMAGE_WIDTH: usize = 400;

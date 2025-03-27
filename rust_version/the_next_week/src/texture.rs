@@ -3,7 +3,7 @@ use std::sync::Arc;
 use image::RgbImage;
 
 use crate::color::Color;
-use crate::config_perlin_spheres::NOISE_TYPE;
+use crate::config_perlin_spheres;
 use crate::interval::Interval;
 use crate::perlin::Perlin;
 use crate::point3::Point3;
@@ -98,7 +98,7 @@ impl NoiseTexture {
 
 impl Texture for NoiseTexture {
     fn value(&self, _u: f64, _v: f64, p: Point3) -> Color {
-        let noise_scale = match NOISE_TYPE {
+        let noise_scale = match config_perlin_spheres::NOISE_TYPE {
             crate::enums::NoiseType::HashedRandom => self.noise.hash_random_noise(p),
             crate::enums::NoiseType::TrilinearInterpolation => self.noise.trilinear_interpolation_noise(p),
         };
