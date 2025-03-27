@@ -3,9 +3,11 @@ use std::sync::Arc;
 use image::RgbImage;
 
 use crate::color::Color;
+use crate::config_perlin_spheres::NOISE_TYPE;
 use crate::interval::Interval;
 use crate::perlin::Perlin;
 use crate::point3::Point3;
+
 
 pub trait Texture {
     fn value(&self, u: f64, v: f64, p: Point3) -> Color;
@@ -96,6 +98,10 @@ impl NoiseTexture {
 
 impl Texture for NoiseTexture {
     fn value(&self, _u: f64, _v: f64, p: Point3) -> Color {
-        Color::new(1.0, 1.0, 1.0) * self.noise.noise(p)
+        let noise_scale = match NOISE_TYPE {
+            crate::enums::NoiseType::HashedRandom => self.noise.hash_random_noise(p),
+            crate::enums::NoiseType::TrilinearInterpolation => self.noise.trilinear_interpolation_noise(p),
+        };
+        Color::new(1.0, 1.0, 1.0) * noise_scale
     }
 }

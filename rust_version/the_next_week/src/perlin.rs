@@ -1,4 +1,4 @@
-use rand::{seq::SliceRandom, Rng};
+use rand::{Rng, seq::SliceRandom};
 
 use crate::constant::PERLIN_POINT_COUNT;
 use crate::point3::Point3;
@@ -28,11 +28,50 @@ impl Perlin {
         }
     }
 
-    pub fn noise(&self, p: Point3) -> f64 {
+    pub fn hash_random_noise(&self, p: Point3) -> f64 {
         let i = (4.0 * p.x) as isize & 255;
         let j = (4.0 * p.y) as isize & 255;
         let k = (4.0 * p.z) as isize & 255;
         self.randfloat[self.perm_x[i as usize] ^ self.perm_y[j as usize] ^ self.perm_z[k as usize]]
     }
 
+    pub fn trilinear_interpolation_noise(&self, p: Point3) -> f64 {
+        let u = p.x - p.x.floor();
+        let v = p.y - p.y.floor();
+        let w = p.z - p.z.floor();
+        let i = p.x.floor() as isize;
+        let j = p.y.floor() as isize;
+        let k = p.z.floor() as isize;
+        let mut c = [[[0.0; 2]; 2]; 2];
+        for di in 0..2 {
+            for dj in 0..2 {
+                for dk in 0..2 {
+                    let index = self.perm_x[((i + di) & 255) as usize]
+                        ^ self.perm_y[((j + dj) & 255) as usize]
+                        ^ self.perm_z[((k + dk) & 255) as usize];
+                    c[di as usize][dj as usize][dk as usize] = self.randfloat[index];
+                }
+            }
+        }
+        Self::trilinear_interp(&c, u, v, w)
+    }
+
+    fn trilinear_interp(c: &[[[f64; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
+        let mut accum = 0.0;
+        for di in 0..2 {
+            for dj in 0..2 {
+                for dk in 0..2 {
+                    let i = di as f64;
+                    let j = dj as f64;
+                    let k = dk as f64;
+
+                    accum += (i * u + (1.0 - i) * (1.0 - u))
+                        * (j * v + (1.0 - j) * (1.0 - v))
+                        * (k * w + (1.0 - k) * (1.0 - w))
+                        * c[di as usize][dj as usize][dk as usize];
+                }
+            }
+        }
+        accum
+    }
 }

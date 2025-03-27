@@ -4,3 +4,8 @@ pub enum Scene {
     Earth,
     PerlinSpheres,
 }
+
+pub enum NoiseType {
+    HashedRandom,
+    TrilinearInterpolation,
+}
