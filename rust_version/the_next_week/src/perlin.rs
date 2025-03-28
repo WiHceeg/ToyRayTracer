@@ -25,7 +25,7 @@ impl Perlin {
                 randfloat = Some(rng.random());
                 randvec = None;
             }
-            NoiseType::LatticeRandomVectors | NoiseType::Turbulence=> {
+            NoiseType::LatticeRandomVectors | NoiseType::Turbulence | NoiseType::TurbulenceMarble => {
                 randfloat = None;
                 randvec = Some(std::array::from_fn(|_| DVec3::new(rng.random_range(-1.0..1.0), rng.random_range(-1.0..1.0), rng.random_range(-1.0..1.0))));
             }

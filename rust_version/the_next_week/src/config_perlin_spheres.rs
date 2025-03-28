@@ -2,7 +2,7 @@ use glam::DVec3;
 use crate::point3::Point3;
 use crate::enums::NoiseType;
 
-pub const NOISE_TYPE: NoiseType = NoiseType::Turbulence;
+pub const NOISE_TYPE: NoiseType = NoiseType::TurbulenceMarble;
 pub const HERMITE_CUBIC_SMOOTHED: bool = true;
 pub const INPUT_POINT_SCALE: f64 = 4.0;
 pub const TURBULENCE_DEPTH: usize = 7;

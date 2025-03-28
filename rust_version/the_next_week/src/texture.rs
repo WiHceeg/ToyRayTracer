@@ -117,6 +117,9 @@ impl Texture for NoiseTexture {
             NoiseType::Turbulence => {
                 white * self.noise.turb(p, config_perlin_spheres::TURBULENCE_DEPTH)
             }
+            NoiseType::TurbulenceMarble => {
+                Color::new(0.5, 0.5, 0.5) * (1.0 + (self.scale * p.z + 10.0 * self.noise.turb(p, config_perlin_spheres::TURBULENCE_DEPTH)).sin())
+            }
         }
     }
 }

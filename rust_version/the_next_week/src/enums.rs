@@ -10,4 +10,5 @@ pub enum NoiseType {
     TrilinearInterpolation,
     LatticeRandomVectors,
     Turbulence,
+    TurbulenceMarble,
 }
