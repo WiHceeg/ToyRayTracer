@@ -4,6 +4,7 @@ use crate::enums::NoiseType;
 
 pub const NOISE_TYPE: NoiseType = NoiseType::TrilinearInterpolation;
 pub const HERMITE_CUBIC_SMOOTHED: bool = true;
+pub const INPUT_POINT_SCALE: f64 = 4.0;
 
 pub const ASPECT_RATIO: f64 = 16.0 / 9.0;
 pub const IMAGE_WIDTH: usize = 400;

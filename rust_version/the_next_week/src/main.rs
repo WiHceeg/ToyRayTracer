@@ -210,7 +210,7 @@ fn earth() -> anyhow::Result<()> {
 
 fn perlin_spheres() -> anyhow::Result<()> {
     let mut world = HittableList::new();
-    let texture = Arc::new(NoiseTexture::new());
+    let texture = Arc::new(NoiseTexture::new(config_perlin_spheres::INPUT_POINT_SCALE));
 
     world.add(Arc::new(Sphere::new_static(
         Point3::new(0.0, -1000.0, 0.0),

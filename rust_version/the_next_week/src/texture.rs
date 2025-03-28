@@ -86,22 +86,24 @@ impl Texture for ImageTexture {
 
 pub struct NoiseTexture {
     noise: Perlin,
+    scale: f64,
 }
 
 impl NoiseTexture {
-    pub fn new() -> NoiseTexture {
+    pub fn new(scale: f64) -> NoiseTexture {
         NoiseTexture {
             noise: Perlin::new(),
+            scale: scale,
         }
     }
 }
 
 impl Texture for NoiseTexture {
     fn value(&self, _u: f64, _v: f64, p: Point3) -> Color {
-        let noise_scale = match config_perlin_spheres::NOISE_TYPE {
-            crate::enums::NoiseType::HashedRandom => self.noise.hash_random_noise(p),
-            crate::enums::NoiseType::TrilinearInterpolation => self.noise.trilinear_interpolation_noise(p),
+        let gray_value = match config_perlin_spheres::NOISE_TYPE {
+            crate::enums::NoiseType::HashedRandom => self.noise.hash_random_noise(self.scale * p),
+            crate::enums::NoiseType::TrilinearInterpolation => self.noise.trilinear_interpolation_noise(self.scale * p),
         };
-        Color::new(1.0, 1.0, 1.0) * noise_scale
+        Color::new(1.0, 1.0, 1.0) * gray_value
     }
 }
