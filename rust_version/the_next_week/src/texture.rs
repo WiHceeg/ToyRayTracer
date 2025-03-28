@@ -4,6 +4,7 @@ use image::RgbImage;
 
 use crate::color::Color;
 use crate::config_perlin_spheres;
+use crate::enums::NoiseType;
 use crate::interval::Interval;
 use crate::perlin::Perlin;
 use crate::point3::Point3;
@@ -102,15 +103,19 @@ impl NoiseTexture {
 
 impl Texture for NoiseTexture {
     fn value(&self, _u: f64, _v: f64, p: Point3) -> Color {
+        let white = Color::ONE;
         match config_perlin_spheres::NOISE_TYPE {
-            crate::enums::NoiseType::HashedRandom => {
-                Color::new(1.0, 1.0, 1.0) * self.noise.hash_random_noise(self.scale * p)
+            NoiseType::HashedRandom => {
+                white * self.noise.hash_random_noise(self.scale * p)
             }
-            crate::enums::NoiseType::TrilinearInterpolation => {
-                Color::new(1.0, 1.0, 1.0) * self.noise.trilinear_interpolation_noise(self.scale * p)
+            NoiseType::TrilinearInterpolation => {
+                white * self.noise.trilinear_interpolation_noise(self.scale * p)
             }
-            crate::enums::NoiseType::LatticeRandomVectors => {
-                Color::new(1.0, 1.0, 1.0) * 0.5 * (1.0 + self.noise.lattice_random_vectors_noise(self.scale * p))
+            NoiseType::LatticeRandomVectors => {
+                white * 0.5 * (1.0 + self.noise.lattice_random_vectors_noise(self.scale * p))
+            }
+            NoiseType::Turbulence => {
+                white * self.noise.turb(p, config_perlin_spheres::TURBULENCE_DEPTH)
             }
         }
     }

@@ -9,4 +9,5 @@ pub enum NoiseType {
     HashedRandom,
     TrilinearInterpolation,
     LatticeRandomVectors,
+    Turbulence,
 }

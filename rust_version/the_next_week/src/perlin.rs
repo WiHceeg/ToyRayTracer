@@ -25,7 +25,7 @@ impl Perlin {
                 randfloat = Some(rng.random());
                 randvec = None;
             }
-            NoiseType::LatticeRandomVectors => {
+            NoiseType::LatticeRandomVectors | NoiseType::Turbulence=> {
                 randfloat = None;
                 randvec = Some(std::array::from_fn(|_| DVec3::new(rng.random_range(-1.0..1.0), rng.random_range(-1.0..1.0), rng.random_range(-1.0..1.0))));
             }
@@ -140,5 +140,17 @@ impl Perlin {
             }
         }
         accum
+    }
+
+    pub fn turb(&self, p: Point3, depth: usize) -> f64 {
+        let mut accum = 0.0;
+        let mut temp_p = p;
+        let mut weight = 1.0;
+        for _ in 0..depth {
+            accum += weight * self.lattice_random_vectors_noise(temp_p);
+            weight *= 0.5;
+            temp_p *= 2.0;
+        }
+        accum.abs()
     }
 }

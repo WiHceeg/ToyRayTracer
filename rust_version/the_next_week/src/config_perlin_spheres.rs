@@ -2,9 +2,10 @@ use glam::DVec3;
 use crate::point3::Point3;
 use crate::enums::NoiseType;
 
-pub const NOISE_TYPE: NoiseType = NoiseType::LatticeRandomVectors;
+pub const NOISE_TYPE: NoiseType = NoiseType::Turbulence;
 pub const HERMITE_CUBIC_SMOOTHED: bool = true;
 pub const INPUT_POINT_SCALE: f64 = 4.0;
+pub const TURBULENCE_DEPTH: usize = 7;
 
 pub const ASPECT_RATIO: f64 = 16.0 / 9.0;
 pub const IMAGE_WIDTH: usize = 400;
