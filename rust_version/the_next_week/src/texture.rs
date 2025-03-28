@@ -8,7 +8,6 @@ use crate::interval::Interval;
 use crate::perlin::Perlin;
 use crate::point3::Point3;
 
-
 pub trait Texture {
     fn value(&self, u: f64, v: f64, p: Point3) -> Color;
 }
@@ -64,8 +63,8 @@ pub struct ImageTexture {
 
 impl ImageTexture {
     pub fn new(filename: &str) -> anyhow::Result<ImageTexture> {
-        let img  = image::open(filename)?.into_rgb8();
-        Ok(ImageTexture { data: img})
+        let img = image::open(filename)?.into_rgb8();
+        Ok(ImageTexture { data: img })
     }
 }
 
@@ -74,15 +73,18 @@ impl Texture for ImageTexture {
         let itv = Interval::new(0.0, 1.0);
         let cord_u = itv.clamp(u);
         let cord_v = 1.0 - itv.clamp(v);
-        
+
         let i = (cord_u * self.data.width() as f64) as u32;
         let j = (cord_v * self.data.height() as f64) as u32;
         let pixel = self.data.get_pixel(i, j);
-        let color_scale = 1.0/255.0;
-        Color::new(color_scale * pixel[0] as f64, color_scale * pixel[1] as f64, color_scale * pixel[2] as f64)
+        let color_scale = 1.0 / 255.0;
+        Color::new(
+            color_scale * pixel[0] as f64,
+            color_scale * pixel[1] as f64,
+            color_scale * pixel[2] as f64,
+        )
     }
 }
-
 
 pub struct NoiseTexture {
     noise: Perlin,
@@ -100,10 +102,16 @@ impl NoiseTexture {
 
 impl Texture for NoiseTexture {
     fn value(&self, _u: f64, _v: f64, p: Point3) -> Color {
-        let gray_value = match config_perlin_spheres::NOISE_TYPE {
-            crate::enums::NoiseType::HashedRandom => self.noise.hash_random_noise(self.scale * p),
-            crate::enums::NoiseType::TrilinearInterpolation => self.noise.trilinear_interpolation_noise(self.scale * p),
-        };
-        Color::new(1.0, 1.0, 1.0) * gray_value
+        match config_perlin_spheres::NOISE_TYPE {
+            crate::enums::NoiseType::HashedRandom => {
+                Color::new(1.0, 1.0, 1.0) * self.noise.hash_random_noise(self.scale * p)
+            }
+            crate::enums::NoiseType::TrilinearInterpolation => {
+                Color::new(1.0, 1.0, 1.0) * self.noise.trilinear_interpolation_noise(self.scale * p)
+            }
+            crate::enums::NoiseType::LatticeRandomVectors => {
+                Color::new(1.0, 1.0, 1.0) * 0.5 * (1.0 + self.noise.lattice_random_vectors_noise(self.scale * p))
+            }
+        }
     }
 }

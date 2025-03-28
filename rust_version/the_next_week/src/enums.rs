@@ -8,4 +8,5 @@ pub enum Scene {
 pub enum NoiseType {
     HashedRandom,
     TrilinearInterpolation,
+    LatticeRandomVectors,
 }
