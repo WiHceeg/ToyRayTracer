@@ -7,6 +7,7 @@ mod config_bouncing_spheres;
 mod config_checkered_spheres;
 mod config_earth;
 mod config_perlin_spheres;
+mod config_quads;
 mod constant;
 mod dvec3;
 mod enums;
@@ -17,6 +18,7 @@ mod interval;
 mod material;
 mod perlin;
 mod point3;
+mod quad;
 mod ray;
 mod sphere;
 mod texture;
@@ -31,6 +33,7 @@ use glam::DVec3;
 use hittable_list::HittableList;
 use material::{Dielectric, Lambertian, Metal};
 use point3::Point3;
+use quad::Quad;
 use rand::Rng;
 use sphere::Sphere;
 use texture::{CheckerTexture, ImageTexture, NoiseTexture};
@@ -239,12 +242,47 @@ fn perlin_spheres() -> anyhow::Result<()> {
     cam.render(&world)
 }
 
+fn quads() -> anyhow::Result<()> {
+    let mut world = HittableList::new();
+
+    let left_red = Arc::new(Lambertian::new_from_solid_color(Color::new(1.0, 0.2, 0.2)));
+    let back_green = Arc::new(Lambertian::new_from_solid_color(Color::new(0.2, 1.0, 0.2)));
+    let right_blue = Arc::new(Lambertian::new_from_solid_color(Color::new(0.2, 0.2, 1.0)));
+    let upper_orange = Arc::new(Lambertian::new_from_solid_color(Color::new(1.0, 0.5, 0.0)));
+    let lower_teal = Arc::new(Lambertian::new_from_solid_color(Color::new(0.2, 0.8, 0.8)));
+
+    world.add(Arc::new(Quad::new(Point3::new(-3.0, -2.0, 5.0), DVec3::new(0.0, 0.0, -4.0), DVec3::new(0.0, 4.0, 0.0), left_red)));
+    world.add(Arc::new(Quad::new(Point3::new(-2.0, -2.0, 0.0), DVec3::new(4.0, 0.0, 0.0), DVec3::new(0.0, 4.0, 0.0), back_green)));
+    world.add(Arc::new(Quad::new(Point3::new(3.0, -2.0, 1.0), DVec3::new(0.0, 0.0, 4.0), DVec3::new(0.0, 4.0, 0.0), right_blue)));
+    world.add(Arc::new(Quad::new(Point3::new(-2.0, 3.0, 1.0), DVec3::new(4.0, 0.0, 0.0), DVec3::new(0.0, 0.0, 4.0), upper_orange)));
+    world.add(Arc::new(Quad::new(Point3::new(-2.0, -3.0, 5.0), DVec3::new(4.0, 0.0, 0.0), DVec3::new(0.0, 0.0, -4.0), lower_teal)));
+
+
+    let mut cam = Camera::default();
+    cam.aspect_ratio = config_quads::ASPECT_RATIO;
+    cam.image_width = config_quads::IMAGE_WIDTH;
+    cam.samples_per_pixel = config_quads::SAMPLES_PER_PIXEL;
+    cam.max_depth = config_quads::MAX_DEPTH;
+
+    cam.vfov = config_quads::V_FOV;
+    cam.lookfrom = config_quads::LOOKFROM;
+    cam.lookat = config_quads::LOOKAT;
+    cam.vup = config_quads::V_UP;
+
+    cam.defocus_angle = config_quads::DEFOCUS_ANGLE;
+    cam.focus_dist = config_quads::FOCUS_DIST;
+
+    cam.render(&world)
+
+}
+
 fn main() {
     let res = match config::TARGET_SCENE {
         enums::Scene::BouncingSpheres => bouncing_spheres(),
         enums::Scene::CheckeredSpheres => checkered_spheres(),
         enums::Scene::Earth => earth(),
         enums::Scene::PerlinSpheres => perlin_spheres(),
+        enums::Scene::Quads => quads(),
     };
 
     match res {

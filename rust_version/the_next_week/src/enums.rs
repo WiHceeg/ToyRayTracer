@@ -3,6 +3,7 @@ pub enum Scene {
     CheckeredSpheres,
     Earth,
     PerlinSpheres,
+    Quads,
 }
 
 pub enum NoiseType {

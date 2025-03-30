@@ -1,10 +1,10 @@
 use std::ops::{Index, IndexMut};
 
+use crate::constant;
 use crate::point3::Point3;
 
 use crate::interval::Interval;
 use crate::ray::Ray;
-
 
 #[derive(Debug, Copy, Clone)]
 pub struct Aabb {
@@ -13,9 +13,7 @@ pub struct Aabb {
     z: Interval,
 }
 
-
 impl Aabb {
-
     pub const EMPTY: Aabb = Aabb {
         x: Interval::EMPTY,
         y: Interval::EMPTY,
@@ -29,15 +27,27 @@ impl Aabb {
     };
 
     pub fn new(x: Interval, y: Interval, z: Interval) -> Aabb {
-        Aabb { x: x, y: y, z: z }
+        Aabb { x: x, y: y, z: z }.pad_to_minimums()
     }
 
     pub fn new_from_points(a: Point3, b: Point3) -> Aabb {
         Aabb {
-            x: if a.x < b.x {Interval::new(a.x, b.x)} else {Interval::new(b.x, a.x)},
-            y: if a.y < b.y {Interval::new(a.y, b.y)} else {Interval::new(b.y, a.y)},
-            z: if a.z < b.z {Interval::new(a.z, b.z)} else {Interval::new(b.z, a.z)}, 
-        }
+            x: if a.x < b.x {
+                Interval::new(a.x, b.x)
+            } else {
+                Interval::new(b.x, a.x)
+            },
+            y: if a.y < b.y {
+                Interval::new(a.y, b.y)
+            } else {
+                Interval::new(b.y, a.y)
+            },
+            z: if a.z < b.z {
+                Interval::new(a.z, b.z)
+            } else {
+                Interval::new(b.z, a.z)
+            },
+        }.pad_to_minimums()
     }
 
     pub fn new_from_merged(box0: Aabb, box1: Aabb) -> Aabb {
@@ -45,7 +55,7 @@ impl Aabb {
             x: Interval::new_from_merged(box0.x, box1.x),
             y: Interval::new_from_merged(box0.y, box1.y),
             z: Interval::new_from_merged(box0.z, box1.z),
-        }
+        }.pad_to_minimums()
     }
 
     pub fn hit(&self, r: &Ray, mut ray_t: Interval) -> bool {
@@ -59,8 +69,12 @@ impl Aabb {
             if t0 > t1 {
                 (t0, t1) = (t1, t0)
             }
-            if t0 > ray_t.min {ray_t.min = t0;}
-            if t1 < ray_t.max {ray_t.max = t1;}
+            if t0 > ray_t.min {
+                ray_t.min = t0;
+            }
+            if t1 < ray_t.max {
+                ray_t.max = t1;
+            }
             if ray_t.min >= ray_t.max {
                 return false;
             }
@@ -78,6 +92,26 @@ impl Aabb {
             2
         }
     }
+
+    fn pad_to_minimums(&self) -> Aabb {
+        Aabb {
+            x: if self.x.size() < constant::MINIMUM_AABB_THICKNESS {
+                self.x.expand(constant::MINIMUM_AABB_THICKNESS)
+            } else {
+                self.x
+            },
+            y: if self.y.size() < constant::MINIMUM_AABB_THICKNESS {
+                self.y.expand(constant::MINIMUM_AABB_THICKNESS)
+            } else {
+                self.y
+            },
+            z: if self.z.size() < constant::MINIMUM_AABB_THICKNESS {
+                self.z.expand(constant::MINIMUM_AABB_THICKNESS)
+            } else {
+                self.z
+            },
+        }
+    }
 }
 
 impl Index<usize> for Aabb {
@@ -88,19 +122,18 @@ impl Index<usize> for Aabb {
             0 => &self.x,
             1 => &self.y,
             2 => &self.z,
-            _ => panic!("index out of bounds"),            
+            _ => panic!("index out of bounds"),
         }
     }
 }
 
 impl IndexMut<usize> for Aabb {
-
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         match index {
             0 => &mut self.x,
             1 => &mut self.y,
             2 => &mut self.z,
-            _ => panic!("index out of bounds"),            
+            _ => panic!("index out of bounds"),
         }
     }
 }

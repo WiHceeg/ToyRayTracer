@@ -6,3 +6,5 @@ pub const RAY_MIN_DISTANCE: f64 = 0.001; //t_min 如果是 0，由于浮点精�
 pub const NEAR_ZERO_THRESHOLD: f64 = 1e-8;
 
 pub const PERLIN_POINT_COUNT: usize = 256;
+
+pub const MINIMUM_AABB_THICKNESS: f64 = 0.0001;

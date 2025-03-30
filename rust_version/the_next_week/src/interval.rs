@@ -25,8 +25,8 @@ impl Interval {
     /// 紧紧包围两个区间的新区间
     pub fn new_from_merged(a: Interval, b: Interval) -> Interval {
         Interval {
-             min: a.min.min(b.min),
-             max: a.max.max(b.max),
+            min: a.min.min(b.min),
+            max: a.max.max(b.max),
         }
     }
 
@@ -59,9 +59,11 @@ impl Interval {
 
     pub fn expand(&self, delta: f64) -> Interval {
         let padding = delta / 2.0;
-        Interval { min: self.min - padding, max: self.max + padding }
+        Interval {
+            min: self.min - padding,
+            max: self.max + padding,
+        }
     }
-
 }
 
 impl Default for Interval {
