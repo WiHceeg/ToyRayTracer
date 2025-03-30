@@ -7,7 +7,7 @@ mod config_bouncing_spheres;
 mod config_checkered_spheres;
 mod config_earth;
 mod config_perlin_spheres;
-mod config_quads;
+mod config_shapes;
 mod constant;
 mod dvec3;
 mod enums;
@@ -18,7 +18,7 @@ mod interval;
 mod material;
 mod perlin;
 mod point3;
-mod quad;
+mod shape;
 mod ray;
 mod sphere;
 mod texture;
@@ -33,7 +33,7 @@ use glam::DVec3;
 use hittable_list::HittableList;
 use material::{Dielectric, Lambertian, Metal};
 use point3::Point3;
-use quad::Quad;
+use shape::Quad;
 use rand::Rng;
 use sphere::Sphere;
 use texture::{CheckerTexture, ImageTexture, NoiseTexture};
@@ -259,18 +259,18 @@ fn quads() -> anyhow::Result<()> {
 
 
     let mut cam = Camera::default();
-    cam.aspect_ratio = config_quads::ASPECT_RATIO;
-    cam.image_width = config_quads::IMAGE_WIDTH;
-    cam.samples_per_pixel = config_quads::SAMPLES_PER_PIXEL;
-    cam.max_depth = config_quads::MAX_DEPTH;
+    cam.aspect_ratio = config_shapes::ASPECT_RATIO;
+    cam.image_width = config_shapes::IMAGE_WIDTH;
+    cam.samples_per_pixel = config_shapes::SAMPLES_PER_PIXEL;
+    cam.max_depth = config_shapes::MAX_DEPTH;
 
-    cam.vfov = config_quads::V_FOV;
-    cam.lookfrom = config_quads::LOOKFROM;
-    cam.lookat = config_quads::LOOKAT;
-    cam.vup = config_quads::V_UP;
+    cam.vfov = config_shapes::V_FOV;
+    cam.lookfrom = config_shapes::LOOKFROM;
+    cam.lookat = config_shapes::LOOKAT;
+    cam.vup = config_shapes::V_UP;
 
-    cam.defocus_angle = config_quads::DEFOCUS_ANGLE;
-    cam.focus_dist = config_quads::FOCUS_DIST;
+    cam.defocus_angle = config_shapes::DEFOCUS_ANGLE;
+    cam.focus_dist = config_shapes::FOCUS_DIST;
 
     cam.render(&world)
 

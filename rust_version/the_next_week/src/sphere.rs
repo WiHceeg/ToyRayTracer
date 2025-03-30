@@ -12,7 +12,7 @@ use crate::point3::Point3;
 use crate::ray::Ray;
 
 pub struct Sphere {
-    center: Ray,    // 默认场景假设所有动画从 t=0 开始，因此 center 的 tm 都是默认 0
+    center: Ray, // 默认场景假设所有动画从 t=0 开始，因此 center 的 tm 都是默认 0
     radius: f64,
     mat: Arc<dyn Material>,
     bbox: Aabb,
@@ -29,7 +29,12 @@ impl Sphere {
         }
     }
 
-    pub fn new_moving(start_center: Point3, end_center: Point3, radius: f64, mat: Arc<dyn Material>) -> Sphere {
+    pub fn new_moving(
+        start_center: Point3,
+        end_center: Point3,
+        radius: f64,
+        mat: Arc<dyn Material>,
+    ) -> Sphere {
         let center = Ray::new(start_center, end_center - start_center);
         let rvec = DVec3::splat(radius);
         let start_box = Aabb::new_from_points(center.at(0.0) - rvec, center.at(0.0) + rvec);
@@ -78,11 +83,11 @@ impl Hittable for Sphere {
 
         let p = r.at(root);
         let outward_normal = (p - current_center) / self.radius; // 单位化
-
-        let rec = HitRecord::with_hit_data(root, p, r, outward_normal, self.mat.clone());
+        let (u, v) = Sphere::get_sphere_uv(outward_normal);
+        let rec = HitRecord::with_hit_data(root, p, (u, v), r, outward_normal, self.mat.clone());
         Some(rec)
     }
-    
+
     fn bounding_box(&self) -> crate::aabb::Aabb {
         self.bbox
     }

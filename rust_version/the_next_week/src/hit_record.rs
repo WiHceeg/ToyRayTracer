@@ -12,7 +12,7 @@ pub struct HitRecord {
     pub normal: DVec3, // Sphere hit 时，会计算 normal，用 (p - center) / radius，已经被单位化了
     pub mat: Arc<dyn Material>,
     pub t: f64,
-    pub u: f64, // the u,v surface coordinates of the ray-object hit point.
+    pub u: f64, // the u,v surface coordinates of the ray-object hit point. 纹理坐标，用于纹理映射。
     pub v: f64,
     pub front_face: bool,
 }
@@ -21,12 +21,11 @@ impl HitRecord {
     pub fn with_hit_data(
         t: f64,
         p: Point3,
+        (u,v): (f64, f64),
         r: &Ray,
         outward_normal: DVec3,
         mat: Arc<dyn Material>,
     ) -> HitRecord {
-
-        let (u, v) = Sphere::get_sphere_uv(outward_normal);
 
         let front_face = r.direction().dot(outward_normal) < 0.;
         let normal = if front_face {
