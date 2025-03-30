@@ -25,7 +25,7 @@ impl Sphere {
             center: Ray::new(static_center, DVec3::ZERO),
             radius: radius.max(0.),
             mat: mat,
-            bbox: Aabb::new_from_points(static_center - rvec, static_center + rvec),
+            bbox: Aabb::new_from_2_points(static_center - rvec, static_center + rvec),
         }
     }
 
@@ -37,8 +37,8 @@ impl Sphere {
     ) -> Sphere {
         let center = Ray::new(start_center, end_center - start_center);
         let rvec = DVec3::splat(radius);
-        let start_box = Aabb::new_from_points(center.at(0.0) - rvec, center.at(0.0) + rvec);
-        let end_box = Aabb::new_from_points(center.at(1.0) - rvec, center.at(1.0) + rvec);
+        let start_box = Aabb::new_from_2_points(center.at(0.0) - rvec, center.at(0.0) + rvec);
+        let end_box = Aabb::new_from_2_points(center.at(1.0) - rvec, center.at(1.0) + rvec);
         Sphere {
             center: center,
             radius: radius.max(0.),

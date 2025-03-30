@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use glam::DVec3;
 
+
 use crate::aabb::Aabb;
 use crate::constant;
 use crate::hit_record::HitRecord;
@@ -50,7 +51,7 @@ pub trait Shape: Hittable {
         }
     }
 
-    /// 输入以基向量为坐标轴的坐标，输出纹理坐标
+    /// 输入以 self.u, self.v 基向量为坐标轴的坐标，输出纹理坐标
     fn alpha_beta_hit_uv(&self, alpha: f64, beta: f64) -> Option<(f64, f64)>;
 
 }
@@ -72,8 +73,8 @@ impl Quad {
         let n = u.cross(v);
         let normal = n.normalize();
         let w = n / n.length_squared();
-        let bbox_diagonal1 = Aabb::new_from_points(Q, Q + u + v);
-        let bbox_diagonal2 = Aabb::new_from_points(Q + u, Q + v);
+        let bbox_diagonal1 = Aabb::new_from_2_points(Q, Q + u + v);
+        let bbox_diagonal2 = Aabb::new_from_2_points(Q + u, Q + v);
         Quad {
             Q: Q,
             u: u,
@@ -130,6 +131,87 @@ impl Shape for Quad {
     fn alpha_beta_hit_uv(&self, alpha: f64, beta: f64) -> Option<(f64, f64)> {
         let unit_interval = Interval::new(0.0, 1.0);
         if !unit_interval.contains(alpha) || !unit_interval.contains(beta) {
+            return None;
+        }
+        Some((alpha, beta))
+    }
+}
+
+
+pub struct Tri {
+    Q: Point3,
+    u: DVec3,
+    v: DVec3,
+    w: DVec3,
+    mat: Arc<dyn Material>,
+    bbox: Aabb,
+    normal: DVec3,
+    D: f64, // 平面方程的常数项
+}
+
+impl Tri {
+    pub fn new(Q: Point3, u: DVec3, v: DVec3, mat: Arc<dyn Material>) -> Tri {
+        let n = u.cross(v);
+        let normal = n.normalize();
+        let w = n / n.length_squared();
+
+        Tri {
+            Q: Q,
+            u: u,
+            v: v,
+            w: w,
+            mat: mat,
+            bbox: Aabb::new_from_points_vec(vec![Q, Q + u, Q + v]),
+            normal: normal,
+            D: normal.dot(Q),
+        }
+    }
+}
+
+impl Hittable for Tri {
+
+    fn bounding_box(&self) -> Aabb {
+        self.bbox
+    }
+    
+    fn hit(&self, r: &Ray, ray_t: Interval) -> Option<HitRecord> {
+        <Self as Shape>::hit(&self, r, ray_t)
+    }
+}
+
+
+
+impl Shape for Tri {
+    fn get_normal(&self) -> DVec3 {
+        self.normal
+    }
+
+    fn get_w(&self) -> DVec3 {
+        self.w
+    }
+
+    fn get_D(&self) -> f64 {
+        self.D
+    }
+
+    fn get_Q(&self) -> Point3 {
+        self.Q
+    }
+
+    fn get_u(&self) -> DVec3 {
+        self.u
+    }
+
+    fn get_v(&self) -> DVec3 {
+        self.v
+    }
+
+    fn get_mat_clone(&self) -> Arc<dyn Material> {
+        self.mat.clone()
+    }
+    
+    fn alpha_beta_hit_uv(&self, alpha: f64, beta: f64) -> Option<(f64, f64)> {
+        if alpha < 0.0 || beta < 0.0 || alpha + beta > 1.0 {
             return None;
         }
         Some((alpha, beta))
