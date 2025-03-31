@@ -39,11 +39,6 @@ pub trait Shape: Hittable {
         let alpha = self.get_w().dot(planar_hip_point_vector.cross(self.get_v()));
         let beta = self.get_w().dot(self.get_u().cross(planar_hip_point_vector));
 
-        let unit_interval = Interval::new(0.0, 1.0);
-        if !unit_interval.contains(alpha) || !unit_interval.contains(beta) {
-            return None;
-        }
-
         if let Some(uv) = self.alpha_beta_hit_uv(alpha, beta) {
             Some(HitRecord::with_hit_data(t, intersection, uv, r, self.get_normal(), self.get_mat_clone()))
         } else {
@@ -215,5 +210,92 @@ impl Shape for Tri {
             return None;
         }
         Some((alpha, beta))
+    }
+}
+
+
+pub struct Ellipse {
+    center: Point3,
+    a: DVec3,   // a, b 分别是长轴和短轴的向量，互相垂直
+    b: DVec3,
+    w: DVec3,
+    mat: Arc<dyn Material>,
+    bbox: Aabb,
+    normal: DVec3,
+    D: f64, // 平面方程的常数项
+}
+
+impl Ellipse {
+    pub fn new(center: Point3, a: DVec3, b: DVec3, mat: Arc<dyn Material>) -> Ellipse {
+        let n = a.cross(b);
+        let normal = n.normalize();
+        let w = n / n.length_squared();
+
+        let bbox = Aabb::new(
+            Interval::new(center.x - (a.x * a.x + b.x * b.x).sqrt(), center.x + (a.x * a.x + b.x * b.x).sqrt()),
+            Interval::new(center.y - (a.y * a.y + b.y * b.y).sqrt(), center.y + (a.y * a.y + b.y * b.y).sqrt()),
+            Interval::new(center.z - (a.z * a.z + b.z * b.z).sqrt(), center.z + (a.z * a.z + b.z * b.z).sqrt()),
+        );
+
+        Ellipse {
+            center: center,
+            a: a,
+            b: b,
+            w: w,
+            mat: mat,
+            bbox: bbox,
+            normal: normal,
+            D: normal.dot(center),
+        }
+    }
+}
+
+
+impl Hittable for Ellipse {
+
+    fn bounding_box(&self) -> Aabb {
+        self.bbox
+    }
+    
+    fn hit(&self, r: &Ray, ray_t: Interval) -> Option<HitRecord> {
+        <Self as Shape>::hit(&self, r, ray_t)
+    }
+}
+
+
+impl Shape for Ellipse {
+    fn get_normal(&self) -> DVec3 {
+        self.normal
+    }
+
+    fn get_w(&self) -> DVec3 {
+        self.w
+    }
+
+    fn get_D(&self) -> f64 {
+        self.D
+    }
+
+    fn get_Q(&self) -> Point3 {
+        self.center
+    }
+
+    fn get_u(&self) -> DVec3 {
+        self.a
+    }
+
+    fn get_v(&self) -> DVec3 {
+        self.b
+    }
+
+    fn get_mat_clone(&self) -> Arc<dyn Material> {
+        self.mat.clone()
+    }
+    
+    fn alpha_beta_hit_uv(&self, alpha: f64, beta: f64) -> Option<(f64, f64)> {
+        if alpha * alpha + beta * beta > 1.0 {
+            return None;
+        }
+        Some((alpha / 2.0 + 0.5, beta / 2.0 + 0.5))
     }
 }
