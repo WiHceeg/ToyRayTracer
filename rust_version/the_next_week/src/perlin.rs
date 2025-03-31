@@ -2,7 +2,7 @@
 use glam::DVec3;
 use rand::{Rng, seq::SliceRandom};
 
-use crate::config_perlin_spheres;
+use crate::config;
 use crate::constant::PERLIN_POINT_COUNT;
 use crate::enums::NoiseType;
 use crate::point3::Point3;
@@ -20,7 +20,7 @@ impl Perlin {
 
         let randfloat: Option<[f64; PERLIN_POINT_COUNT]>;
         let randvec: Option<[DVec3; PERLIN_POINT_COUNT]>;
-        match config_perlin_spheres::NOISE_TYPE {
+        match config::NOISE_TYPE {
             NoiseType::HashedRandom | NoiseType::TrilinearInterpolation => {
                 randfloat = Some(rng.random());
                 randvec = None;
@@ -57,7 +57,7 @@ impl Perlin {
         let mut u = p.x - p.x.floor();
         let mut v = p.y - p.y.floor();
         let mut w = p.z - p.z.floor();
-        if config_perlin_spheres::HERMITE_CUBIC_SMOOTHED {
+        if config::HERMITE_CUBIC_SMOOTHED {
             u = u * u * (3.0 - 2.0 * u);
             v = v * v * (3.0 - 2.0 * v);
             w = w * w * (3.0 - 2.0 * w);

@@ -21,6 +21,8 @@ pub struct Camera {
     pub image_width: usize,       // Rendered image width in pixel count
     pub samples_per_pixel: usize, // Count of random samples for each pixel
     pub max_depth: usize,         // Maximum number of ray bounces into scene
+    pub background: Color, // Scene background color
+    pub enable_gradient_sky: bool,  // sky color
 
     pub vfov: f64, // Vertical view angle (field of view)
     pub lookfrom: Point3,
@@ -67,7 +69,7 @@ impl Camera {
                 let mut pixel_color = Color::ZERO;
                 for _ in 0..self.samples_per_pixel {
                     let r = self.get_ray(i, j);
-                    pixel_color += Camera::ray_color(&r, self.max_depth, world);
+                    pixel_color += self.ray_color(&r, self.max_depth, world);
                 }
                 (self.pixel_samples_scale * pixel_color).write_color(&mut writer)?;
             }
@@ -141,22 +143,31 @@ impl Camera {
         self.center + p.x * self.defocus_disk_u + p.y * self.defocus_disk_v
     }
 
-    pub fn ray_color(r: &Ray, depth: usize, world: &dyn Hittable) -> Color {
+    pub fn ray_color(&self, r: &Ray, depth: usize, world: &dyn Hittable) -> Color {
         // If we've exceeded the ray bounce limit, no more light is gathered.
         if depth == 0 {
             return Color::ZERO;
         }
 
-        if let Some(rec) = world.hit(r, Interval::new(constant::RAY_MIN_DISTANCE, f64::INFINITY)) {
-            if let Some((attenuation, scattered)) = rec.mat.scatter(r, &rec) {
-                return attenuation * Camera::ray_color(&scattered, depth - 1, world);
-            }
-            return Color::ZERO;
+        let Some(rec) = world.hit(r, Interval::new(constant::RAY_MIN_DISTANCE, f64::INFINITY)) else {
+            return if self.enable_gradient_sky {
+                // 没击中，背景色，这里可以理解成天空的颜色
+                let unit_direction = r.direction().normalize();
+                let a = 0.5 * (unit_direction.y + 1.0);
+                (1.0 - a) * Color::new(1.0, 1.0, 1.0) + a * config::SKY_GRADIENT
+            } else {
+                self.background
+            };
+        };
+        
+        let color_from_emission_opt = rec.mat.emitted(rec.u, rec.v, rec.p);
+        
+        // 如果能散射，计算散射颜色
+        if let Some((attenuation, scattered)) = rec.mat.scatter(r, &rec) {
+            let color_from_scatter = attenuation * self.ray_color(&scattered, depth - 1, world);
+            return color_from_emission_opt.unwrap_or(Color::ZERO) + color_from_scatter;
         }
-
-        // 没击中，背景色，这里可以理解成天空的颜色
-        let unit_direction = r.direction().normalize();
-        let a = 0.5 * (unit_direction.y + 1.0);
-        (1.0 - a) * Color::new(1.0, 1.0, 1.0) + a * config::SKY_GRADIENT
+        // 不能散射，只返回发射颜色（如果有）
+        color_from_emission_opt.unwrap_or(Color::ZERO)
     }
 }

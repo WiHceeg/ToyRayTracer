@@ -4,7 +4,9 @@ pub enum Scene {
     Earth,
     PerlinSpheres,
     Quads,
-    Shapes,
+    Shapes,    
+    SimpleLight,
+    CornellBox,
 }
 
 pub enum NoiseType {

@@ -5,11 +5,15 @@ use glam::DVec3;
 use crate::color::Color;
 use crate::dvec3::DVec3Ext;
 use crate::hit_record::HitRecord;
+use crate::point3::Point3;
 use crate::ray::Ray;
 use crate::texture::{SolidColor, Texture};
 
 pub trait Material {
     fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)>;
+    fn emitted(&self, _u: f64, _v: f64, _p: Point3) -> Option<Color> {
+        None
+    }
 }
 
 pub struct Lambertian {
@@ -111,3 +115,30 @@ impl Material for Dielectric {
         Some((attenuation, scattered))
     }
 }
+
+pub struct DiffuseLight {
+    tex: Arc<dyn Texture>
+}
+
+
+impl DiffuseLight {
+    pub fn new_from_solid_color(emit: Color) -> DiffuseLight {
+        DiffuseLight {
+            tex: Arc::new(SolidColor::new(emit)),
+        }
+    }
+
+    pub fn new_from_texture(tex: Arc<dyn Texture>) -> DiffuseLight {
+        DiffuseLight { tex: tex }
+    }
+}
+
+impl Material for DiffuseLight {
+    fn scatter(&self, _r_in: &Ray, _rec: &HitRecord) -> Option<(Color, Ray)> {
+        None
+    }
+    fn emitted(&self, u: f64, v: f64, p: Point3) -> Option<Color> {
+        Some(self.tex.value(u, v, p))
+    }
+}
+

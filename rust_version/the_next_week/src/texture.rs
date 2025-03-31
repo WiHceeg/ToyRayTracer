@@ -3,7 +3,7 @@ use std::sync::Arc;
 use image::RgbImage;
 
 use crate::color::Color;
-use crate::config_perlin_spheres;
+use crate::config;
 use crate::enums::NoiseType;
 use crate::interval::Interval;
 use crate::perlin::Perlin;
@@ -104,7 +104,7 @@ impl NoiseTexture {
 impl Texture for NoiseTexture {
     fn value(&self, _u: f64, _v: f64, p: Point3) -> Color {
         let white = Color::ONE;
-        match config_perlin_spheres::NOISE_TYPE {
+        match config::NOISE_TYPE {
             NoiseType::HashedRandom => {
                 white * self.noise.hash_random_noise(self.scale * p)
             }
@@ -115,10 +115,10 @@ impl Texture for NoiseTexture {
                 white * 0.5 * (1.0 + self.noise.lattice_random_vectors_noise(self.scale * p))
             }
             NoiseType::Turbulence => {
-                white * self.noise.turb(p, config_perlin_spheres::TURBULENCE_DEPTH)
+                white * self.noise.turb(p, config::TURBULENCE_DEPTH)
             }
             NoiseType::TurbulenceMarble => {
-                Color::splat(0.5) * (1.0 + (self.scale * p.z + 10.0 * self.noise.turb(p, config_perlin_spheres::TURBULENCE_DEPTH)).sin())
+                Color::splat(0.5) * (1.0 + (self.scale * p.z + 10.0 * self.noise.turb(p, config::TURBULENCE_DEPTH)).sin())
             }
         }
     }

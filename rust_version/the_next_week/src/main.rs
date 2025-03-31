@@ -5,9 +5,11 @@ mod color;
 mod config;
 mod config_bouncing_spheres;
 mod config_checkered_spheres;
+mod config_cornell_box;
 mod config_earth;
 mod config_perlin_spheres;
 mod config_shapes;
+mod config_simple_light;
 mod constant;
 mod dvec3;
 mod enums;
@@ -29,9 +31,10 @@ use bvh::BvhNode;
 use camera::Camera;
 use color::Color;
 use dvec3::DVec3Ext;
+use enums::Scene;
 use glam::DVec3;
 use hittable_list::HittableList;
-use material::{Dielectric, Lambertian, Metal};
+use material::{Dielectric, DiffuseLight, Lambertian, Metal};
 use point3::Point3;
 use shape::{Annulus, Ellipse, Quad, Tri};
 use rand::Rng;
@@ -133,6 +136,8 @@ fn bouncing_spheres() -> anyhow::Result<()> {
     cam.image_width = config_bouncing_spheres::IMAGE_WIDTH;
     cam.samples_per_pixel = config_bouncing_spheres::SAMPLES_PER_PIXEL;
     cam.max_depth = config_bouncing_spheres::MAX_DEPTH;
+    cam.background = config_bouncing_spheres::BACKGROUND;
+    cam.enable_gradient_sky = config_bouncing_spheres::ENABLE_GRADIENT_SKY;
 
     cam.vfov = config_bouncing_spheres::V_FOV;
     cam.lookfrom = config_bouncing_spheres::LOOKFROM;
@@ -175,6 +180,8 @@ fn checkered_spheres() -> anyhow::Result<()> {
     cam.image_width = config_checkered_spheres::IMAGE_WIDTH;
     cam.samples_per_pixel = config_checkered_spheres::SAMPLES_PER_PIXEL;
     cam.max_depth = config_checkered_spheres::MAX_DEPTH;
+    cam.background = config_checkered_spheres::BACKGROUND;
+    cam.enable_gradient_sky = config_checkered_spheres::ENABLE_GRADIENT_SKY;
 
     cam.vfov = config_checkered_spheres::V_FOV;
     cam.lookfrom = config_checkered_spheres::LOOKFROM;
@@ -199,6 +206,8 @@ fn earth() -> anyhow::Result<()> {
     cam.image_width = config_earth::IMAGE_WIDTH;
     cam.samples_per_pixel = config_earth::SAMPLES_PER_PIXEL;
     cam.max_depth = config_earth::MAX_DEPTH;
+    cam.background = config_earth::BACKGROUND;
+    cam.enable_gradient_sky = config_earth::ENABLE_GRADIENT_SKY;
 
     cam.vfov = config_earth::V_FOV;
     cam.lookfrom = config_earth::LOOKFROM;
@@ -230,6 +239,8 @@ fn perlin_spheres() -> anyhow::Result<()> {
     cam.image_width = config_perlin_spheres::IMAGE_WIDTH;
     cam.samples_per_pixel = config_perlin_spheres::SAMPLES_PER_PIXEL;
     cam.max_depth = config_perlin_spheres::MAX_DEPTH;
+    cam.background = config_perlin_spheres::BACKGROUND;
+    cam.enable_gradient_sky = config_perlin_spheres::ENABLE_GRADIENT_SKY;
 
     cam.vfov = config_perlin_spheres::V_FOV;
     cam.lookfrom = config_perlin_spheres::LOOKFROM;
@@ -263,6 +274,8 @@ fn quads() -> anyhow::Result<()> {
     cam.image_width = config_shapes::IMAGE_WIDTH;
     cam.samples_per_pixel = config_shapes::SAMPLES_PER_PIXEL;
     cam.max_depth = config_shapes::MAX_DEPTH;
+    cam.background = config_shapes::BACKGROUND;
+    cam.enable_gradient_sky = config_shapes::ENABLE_GRADIENT_SKY;
 
     cam.vfov = config_shapes::V_FOV;
     cam.lookfrom = config_shapes::LOOKFROM;
@@ -298,6 +311,8 @@ fn shapes() -> anyhow::Result<()> {
     cam.image_width = config_shapes::IMAGE_WIDTH;
     cam.samples_per_pixel = config_shapes::SAMPLES_PER_PIXEL;
     cam.max_depth = config_shapes::MAX_DEPTH;
+    cam.background = config_shapes::BACKGROUND;
+    cam.enable_gradient_sky = config_shapes::ENABLE_GRADIENT_SKY;
 
     cam.vfov = config_shapes::V_FOV;
     cam.lookfrom = config_shapes::LOOKFROM;
@@ -311,14 +326,88 @@ fn shapes() -> anyhow::Result<()> {
 
 }
 
+fn simple_light() -> anyhow::Result<()> {
+    let mut world = HittableList::new();
+    
+    let perlin_texture = Arc::new(NoiseTexture::new(config_simple_light::INPUT_POINT_SCALE));
+    world.add(Arc::new(Sphere::new_static(
+        Point3::new(0.0, -1000.0, 0.0),
+        1000.0,
+        Arc::new(Lambertian::new_from_texture(perlin_texture.clone())),
+    )));
+    world.add(Arc::new(Sphere::new_static(
+        Point3::new(0.0, 2.0, 0.0),
+        2.0,
+        Arc::new(Lambertian::new_from_texture(perlin_texture)),
+    )));
+
+    let difflight = Arc::new(DiffuseLight::new_from_solid_color(Color::new(4.0, 4.0, 4.0)));
+    world.add(Arc::new(Sphere::new_static(Point3::new(0.0, 7.0, 0.0), 2.0, difflight.clone())));
+    world.add(Arc::new(Quad::new(Point3::new(3.0, 1.0, -2.0), DVec3::new(2.0, 0.0, 0.0), DVec3::new(0.0, 2.0, 0.0), difflight)));
+    let mut cam = Camera::default();
+    cam.aspect_ratio = config_simple_light::ASPECT_RATIO;
+    cam.image_width = config_simple_light::IMAGE_WIDTH;
+    cam.samples_per_pixel = config_simple_light::SAMPLES_PER_PIXEL;
+    cam.max_depth = config_simple_light::MAX_DEPTH;
+    cam.background = config_simple_light::BACKGROUND;
+    cam.enable_gradient_sky = config_simple_light::ENABLE_GRADIENT_SKY;
+
+    cam.vfov = config_simple_light::V_FOV;
+    cam.lookfrom = config_simple_light::LOOKFROM;
+    cam.lookat = config_simple_light::LOOKAT;
+    cam.vup = config_simple_light::V_UP;
+
+    cam.defocus_angle = config_simple_light::DEFOCUS_ANGLE;
+    cam.focus_dist = config_simple_light::FOCUS_DIST;
+
+    cam.render(&world)    
+}
+
+fn cornell_box() -> anyhow::Result<()> {
+    let mut world = HittableList::new();
+    
+    let red = Arc::new(Lambertian::new_from_solid_color(Color::new(0.65, 0.05, 0.05)));
+    let white = Arc::new(Lambertian::new_from_solid_color(Color::new(0.73, 0.73, 0.73)));
+    let green = Arc::new(Lambertian::new_from_solid_color(Color::new(0.12, 0.45, 0.15)));
+    let light = Arc::new(DiffuseLight::new_from_solid_color(Color::new(15.0, 15.0, 15.0)));
+
+    world.add(Arc::new(Quad::new(Point3::new(555.0, 0.0, 0.0), DVec3::new(0.0, 555.0, 0.0), DVec3::new(0.0, 0.0, 555.0), green)));
+    world.add(Arc::new(Quad::new(Point3::new(0.0, 0.0, 0.0), DVec3::new(0.0, 555.0, 0.0), DVec3::new(0.0, 0.0, 555.0), red)));
+    world.add(Arc::new(Quad::new(Point3::new(343.0, 554.0, 332.0), DVec3::new(-130.0, 0.0, 0.0), DVec3::new(0.0, 0.0, -105.0), light)));
+    world.add(Arc::new(Quad::new(Point3::new(0.0, 0.0, 0.0), DVec3::new(555.0, 0.0, 0.0), DVec3::new(0.0, 0.0, 555.0), white.clone())));
+    world.add(Arc::new(Quad::new(Point3::new(555.0, 555.0, 555.0), DVec3::new(-555.0, 0.0, 0.0), DVec3::new(0.0, 0.0, -555.0), white.clone())));
+    world.add(Arc::new(Quad::new(Point3::new(0.0, 0.0, 555.0), DVec3::new(555.0, 0.0, 0.0), DVec3::new(0.0, 555.0, 0.0), white)));
+    
+    let mut cam = Camera::default();
+    cam.aspect_ratio = config_cornell_box::ASPECT_RATIO;
+    cam.image_width = config_cornell_box::IMAGE_WIDTH;
+    cam.samples_per_pixel = config_cornell_box::SAMPLES_PER_PIXEL;
+    cam.max_depth = config_cornell_box::MAX_DEPTH;
+    cam.background = config_cornell_box::BACKGROUND;
+    cam.enable_gradient_sky = config_cornell_box::ENABLE_GRADIENT_SKY;
+
+    cam.vfov = config_cornell_box::V_FOV;
+    cam.lookfrom = config_cornell_box::LOOKFROM;
+    cam.lookat = config_cornell_box::LOOKAT;
+    cam.vup = config_cornell_box::V_UP;
+
+    cam.defocus_angle = config_cornell_box::DEFOCUS_ANGLE;
+    cam.focus_dist = config_cornell_box::FOCUS_DIST;
+
+    cam.render(&world)    
+}
+
+
 fn main() {
     let res = match config::TARGET_SCENE {
-        enums::Scene::BouncingSpheres => bouncing_spheres(),
-        enums::Scene::CheckeredSpheres => checkered_spheres(),
-        enums::Scene::Earth => earth(),
-        enums::Scene::PerlinSpheres => perlin_spheres(),
-        enums::Scene::Quads => quads(),
-        enums::Scene::Shapes => shapes(),
+        Scene::BouncingSpheres => bouncing_spheres(),
+        Scene::CheckeredSpheres => checkered_spheres(),
+        Scene::Earth => earth(),
+        Scene::PerlinSpheres => perlin_spheres(),
+        Scene::Quads => quads(),
+        Scene::Shapes => shapes(),
+        Scene::SimpleLight => simple_light(),
+        Scene::CornellBox => cornell_box(),
     };
 
     match res {
