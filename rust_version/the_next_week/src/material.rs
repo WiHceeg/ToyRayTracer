@@ -30,9 +30,9 @@ impl Lambertian {
 
 impl Material for Lambertian {
     fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)> {
-        let mut scatter_direction = rec.normal + DVec3::random_unit();
+        let mut scatter_direction = rec.unit_normal + DVec3::random_unit();
         if scatter_direction.near_zero() {
-            scatter_direction = rec.normal;
+            scatter_direction = rec.unit_normal;
         }
         let scattered = Ray::new_with_time(rec.p, scatter_direction, r_in.time());
         let attenuation = self.tex.value(rec.u, rec.v, rec.p);
@@ -54,11 +54,11 @@ impl Metal {
 }
 impl Material for Metal {
     fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)> {
-        let mut reflected = r_in.direction().reflect(rec.normal);
+        let mut reflected = r_in.direction().reflect(rec.unit_normal);
         reflected = reflected.normalize() + self.fuzz * DVec3::random_unit();
         let scattered = Ray::new_with_time(rec.p, reflected, r_in.time());
         let attenuation = self.albedo;
-        if scattered.direction().dot(rec.normal) > 0. {
+        if scattered.direction().dot(rec.unit_normal) > 0. {
             Some((attenuation, scattered))
         } else {
             None
@@ -96,15 +96,15 @@ impl Material for Dielectric {
 
         let unit_r_in_direction = r_in.direction().normalize();
 
-        let cos_theta = (-unit_r_in_direction).dot(rec.normal).min(1.);
+        let cos_theta = (-unit_r_in_direction).dot(rec.unit_normal).min(1.);
         let sin_theta = (1. - cos_theta * cos_theta).sqrt();
 
         let cannot_refract = ri * sin_theta > 1.;
         let r_out_direction =
             if cannot_refract || Dielectric::reflectance(cos_theta, ri) > rand::random::<f64>() {
-                unit_r_in_direction.reflect(rec.normal)
+                unit_r_in_direction.reflect(rec.unit_normal)
             } else {
-                unit_r_in_direction.refract(rec.normal, ri)
+                unit_r_in_direction.refract(rec.unit_normal, ri)
             };
 
         let scattered = Ray::new_with_time(rec.p, r_out_direction, r_in.time());

@@ -59,14 +59,14 @@ pub struct Quad {
     w: DVec3,
     mat: Arc<dyn Material>,
     bbox: Aabb,
-    normal: DVec3,
+    unit_normal: DVec3,
     D: f64, // 平面方程的常数项
 }
 
 impl Quad {
     pub fn new(Q: Point3, u: DVec3, v: DVec3, mat: Arc<dyn Material>) -> Quad {
         let n = u.cross(v);
-        let normal = n.normalize();
+        let unit_normal = n.normalize();
         let w = n / n.length_squared();
         let bbox_diagonal1 = Aabb::new_from_2_points(Q, Q + u + v);
         let bbox_diagonal2 = Aabb::new_from_2_points(Q + u, Q + v);
@@ -77,8 +77,8 @@ impl Quad {
             w: w,
             mat: mat,
             bbox: Aabb::new_from_merged(bbox_diagonal1, bbox_diagonal2),
-            normal: normal,
-            D: normal.dot(Q),
+            unit_normal: unit_normal,
+            D: unit_normal.dot(Q),
         }
     }
 }
@@ -96,7 +96,7 @@ impl Hittable for Quad {
 
 impl Shape for Quad {
     fn get_normal(&self) -> DVec3 {
-        self.normal
+        self.unit_normal
     }
 
     fn get_w(&self) -> DVec3 {
@@ -140,14 +140,14 @@ pub struct Tri {
     w: DVec3,
     mat: Arc<dyn Material>,
     bbox: Aabb,
-    normal: DVec3,
+    unit_normal: DVec3,
     D: f64, // 平面方程的常数项
 }
 
 impl Tri {
     pub fn new(Q: Point3, u: DVec3, v: DVec3, mat: Arc<dyn Material>) -> Tri {
         let n = u.cross(v);
-        let normal = n.normalize();
+        let unit_normal = n.normalize();
         let w = n / n.length_squared();
 
         Tri {
@@ -157,8 +157,8 @@ impl Tri {
             w: w,
             mat: mat,
             bbox: Aabb::new_from_points_vec(vec![Q, Q + u, Q + v]),
-            normal: normal,
-            D: normal.dot(Q),
+            unit_normal: unit_normal,
+            D: unit_normal.dot(Q),
         }
     }
 }
@@ -178,7 +178,7 @@ impl Hittable for Tri {
 
 impl Shape for Tri {
     fn get_normal(&self) -> DVec3 {
-        self.normal
+        self.unit_normal
     }
 
     fn get_w(&self) -> DVec3 {
@@ -221,14 +221,14 @@ pub struct Ellipse {
     w: DVec3,
     mat: Arc<dyn Material>,
     bbox: Aabb,
-    normal: DVec3,
+    unit_normal: DVec3,
     D: f64, // 平面方程的常数项
 }
 
 impl Ellipse {
     pub fn new(center: Point3, a: DVec3, b: DVec3, mat: Arc<dyn Material>) -> Ellipse {
         let n = a.cross(b);
-        let normal = n.normalize();
+        let unit_normal = n.normalize();
         let w = n / n.length_squared();
 
         let bbox = Aabb::new(
@@ -244,8 +244,8 @@ impl Ellipse {
             w: w,
             mat: mat,
             bbox: bbox,
-            normal: normal,
-            D: normal.dot(center),
+            unit_normal: unit_normal,
+            D: unit_normal.dot(center),
         }
     }
 }
@@ -265,7 +265,7 @@ impl Hittable for Ellipse {
 
 impl Shape for Ellipse {
     fn get_normal(&self) -> DVec3 {
-        self.normal
+        self.unit_normal
     }
 
     fn get_w(&self) -> DVec3 {
@@ -294,6 +294,100 @@ impl Shape for Ellipse {
     
     fn alpha_beta_hit_uv(&self, alpha: f64, beta: f64) -> Option<(f64, f64)> {
         if alpha * alpha + beta * beta > 1.0 {
+            return None;
+        }
+        Some((alpha / 2.0 + 0.5, beta / 2.0 + 0.5))
+    }
+}
+
+
+pub struct Annulus {
+    center: Point3,
+    outer_vector: DVec3, 
+    inner_vector: DVec3,
+    outer_radius: f64,
+    inner_radius: f64,
+    w: DVec3,
+    mat: Arc<dyn Material>,
+    bbox: Aabb,
+    unit_normal: DVec3,
+    D: f64, // 平面方程的常数项
+}
+
+impl Annulus {
+    pub fn new(center: Point3, outer_vector: DVec3, inner_vector: DVec3, mat: Arc<dyn Material>) -> Annulus {
+        let outer_radius = outer_vector.length();
+        let inner_radius = inner_vector.length();
+        let n = outer_vector.cross(inner_vector);
+        let unit_normal = n.normalize();
+        let w = n / n.length_squared();
+        let bbox = Aabb::new(
+            Interval::new(center.x - outer_radius * (1.0 - unit_normal.x * unit_normal.x).sqrt(), center.x + outer_radius * (1.0 - unit_normal.x * unit_normal.x).sqrt()),
+            Interval::new(center.y - outer_radius * (1.0 - unit_normal.y * unit_normal.y).sqrt(), center.y + outer_radius * (1.0 - unit_normal.y * unit_normal.y).sqrt()),
+            Interval::new(center.z - outer_radius * (1.0 - unit_normal.z * unit_normal.z).sqrt(), center.z + outer_radius * (1.0 - unit_normal.z * unit_normal.z).sqrt()),
+        );
+
+        Annulus {
+            center: center,
+            outer_vector: outer_vector,
+            inner_vector: inner_vector,
+            outer_radius: outer_radius,
+            inner_radius: inner_radius,
+            w: w,
+            mat: mat,
+            bbox: bbox,
+            unit_normal: unit_normal,
+            D: unit_normal.dot(center),
+        }        
+    }
+}
+
+
+
+impl Hittable for Annulus {
+
+    fn bounding_box(&self) -> Aabb {
+        self.bbox
+    }
+    
+    fn hit(&self, r: &Ray, ray_t: Interval) -> Option<HitRecord> {
+        <Self as Shape>::hit(&self, r, ray_t)
+    }
+}
+
+
+impl Shape for Annulus {
+    fn get_normal(&self) -> DVec3 {
+        self.unit_normal
+    }
+
+    fn get_w(&self) -> DVec3 {
+        self.w
+    }
+
+    fn get_D(&self) -> f64 {
+        self.D
+    }
+
+    fn get_Q(&self) -> Point3 {
+        self.center
+    }
+
+    fn get_u(&self) -> DVec3 {
+        self.outer_vector
+    }
+
+    fn get_v(&self) -> DVec3 {
+        self.inner_vector
+    }
+
+    fn get_mat_clone(&self) -> Arc<dyn Material> {
+        self.mat.clone()
+    }
+    
+    fn alpha_beta_hit_uv(&self, alpha: f64, beta: f64) -> Option<(f64, f64)> {
+        let distance_squared = (alpha * self.outer_vector + beta * self.inner_vector).length_squared();
+        if distance_squared < self.inner_radius * self.inner_radius || self.outer_radius * self.outer_radius < distance_squared {
             return None;
         }
         Some((alpha / 2.0 + 0.5, beta / 2.0 + 0.5))
