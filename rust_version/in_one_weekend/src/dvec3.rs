@@ -31,7 +31,7 @@ impl DVec3Ext for DVec3 {
     fn random_unit() -> DVec3 {
         let mut rng = rand::rng();
         loop {
-            let p = DVec3::new(rng.random(), rng.random(), rng.random());
+            let p = DVec3::new(rng.random_range(-1.0..1.0), rng.random_range(-1.0..1.0), rng.random_range(-1.0..1.0));
             let lensq = p.length_squared();
             if 1e-160 < lensq && lensq <= 1. {
                 return p.normalize();
