@@ -376,8 +376,11 @@ fn cornell_box() -> anyhow::Result<()> {
     world.add(Arc::new(Quad::new(Point3::new(343.0, 554.0, 332.0), DVec3::new(-130.0, 0.0, 0.0), DVec3::new(0.0, 0.0, -105.0), light)));
     world.add(Arc::new(Quad::new(Point3::new(0.0, 0.0, 0.0), DVec3::new(555.0, 0.0, 0.0), DVec3::new(0.0, 0.0, 555.0), white.clone())));
     world.add(Arc::new(Quad::new(Point3::new(555.0, 555.0, 555.0), DVec3::new(-555.0, 0.0, 0.0), DVec3::new(0.0, 0.0, -555.0), white.clone())));
-    world.add(Arc::new(Quad::new(Point3::new(0.0, 0.0, 555.0), DVec3::new(555.0, 0.0, 0.0), DVec3::new(0.0, 555.0, 0.0), white)));
+    world.add(Arc::new(Quad::new(Point3::new(0.0, 0.0, 555.0), DVec3::new(555.0, 0.0, 0.0), DVec3::new(0.0, 555.0, 0.0), white.clone())));
     
+    world.add(Arc::new(Quad::cuboid(Point3::new(130.0, 0.0, 65.0), Point3::new(295.0, 165.0, 230.0), white.clone())));
+    world.add(Arc::new(Quad::cuboid(Point3::new(265.0, 0.0, 295.0), Point3::new(430.0, 330.0, 460.0), white)));
+
     let mut cam = Camera::default();
     cam.aspect_ratio = config_cornell_box::ASPECT_RATIO;
     cam.image_width = config_cornell_box::IMAGE_WIDTH;
