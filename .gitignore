@@ -31,11 +31,11 @@
 *.out
 *.app
 
-cpp_version/build/
-cpp_version/.vscode/
-rust_version/in_one_weekend/target/
-rust_version/in_one_weekend/output.ppm
-rust_version/in_one_weekend/Cargo.lock
-rust_version/the_next_week/target/
-rust_version/the_next_week/output.ppm
-rust_version/the_next_week/Cargo.lock
+.old/cpp_version/build/
+.old/cpp_version/.vscode/
+/in_one_weekend/target/
+/in_one_weekend/output.ppm
+/in_one_weekend/Cargo.lock
+/the_next_week/target/
+/the_next_week/output.ppm
+/the_next_week/Cargo.lock
