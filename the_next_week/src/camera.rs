@@ -65,6 +65,7 @@ impl Camera {
 
         for j in 0..self.image_height {
             print!("\rScanlines remaining: {} ", self.image_height - j);
+            io::stdout().flush()?;
             for i in 0..self.image_width {
                 let mut pixel_color = Color::ZERO;
                 for _ in 0..self.samples_per_pixel {
