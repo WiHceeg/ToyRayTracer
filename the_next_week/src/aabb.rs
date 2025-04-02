@@ -1,4 +1,7 @@
-use std::ops::{Index, IndexMut};
+use core::f64;
+use std::ops::{Index, IndexMut, Add, AddAssign};
+
+use glam::DVec3;
 
 use crate::constant;
 use crate::point3::Point3;
@@ -50,6 +53,14 @@ impl Aabb {
         }.pad_to_minimums()
     }
 
+    pub fn new_from_2_strict_ordered_points(a: Point3, b: Point3) -> Aabb {
+        Aabb {
+            x: Interval::new(a.x, b.x),
+            y: Interval::new(a.y, b.y),
+            z: Interval::new(a.z, b.z),
+        }.pad_to_minimums()
+    }
+
     pub fn new_from_points_vec(points: Vec<Point3>) -> Aabb {
         assert!(points.len() >= 2, "points.len() must >= 2");
         
@@ -84,6 +95,35 @@ impl Aabb {
             z: Interval::new_from_merged(box0.z, box1.z),
         }.pad_to_minimums()
     }
+
+    pub fn translate(&self, offset: DVec3) -> Aabb {
+        *self + offset
+    }
+
+    pub fn rotate_y(&self, angle: f64) -> Aabb {
+        let radians = angle.to_radians();
+        let sin_theta = radians.sin();
+        let cos_theta = radians.cos();
+
+        let mut min = Point3::new(f64::INFINITY, self.y.min, f64::INFINITY);
+        let mut max = Point3::new(f64::NEG_INFINITY, self.y.max, f64::NEG_INFINITY);
+        
+        for i in [0.0, 1.0] {
+            for k in [0.0, 1.0] {
+                let x = i * self.x.max + (1.0 - i) * self.x.min;
+                let z = k * self.z.max + (1.0 - k) * self.z.min;
+                let new_x = cos_theta * x - sin_theta * z;
+                let new_z = -sin_theta * x + cos_theta * z;
+                min.x = min.x.min(new_x);
+                min.z = min.z.min(new_z);
+                max.x = max.x.max(new_x);
+                max.z = max.z.max(new_z);
+            }
+        }
+
+        Aabb::new_from_2_strict_ordered_points(min, max)
+    }
+
 
     pub fn hit(&self, r: &Ray, mut ray_t: Interval) -> bool {
         let ray_orig = r.origin();
@@ -162,5 +202,25 @@ impl IndexMut<usize> for Aabb {
             2 => &mut self.z,
             _ => panic!("index out of bounds"),
         }
+    }
+}
+
+impl Add<DVec3> for Aabb {
+    type Output = Aabb;
+
+    fn add(self, offset: DVec3) -> Self::Output {
+        Aabb {
+            x: self.x + offset.x,
+            y: self.y + offset.y,
+            z: self.z + offset.z,
+        }
+    }
+}
+
+impl AddAssign<DVec3> for Aabb {
+    fn add_assign(&mut self, offset: DVec3) {
+        self.x += offset.x;
+        self.y += offset.y;
+        self.z += offset.z;
     }
 }

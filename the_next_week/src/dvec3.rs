@@ -1,7 +1,11 @@
+use std::ops::Add;
+
 use glam::DVec3;
 use rand::Rng;
 
+use crate::aabb::Aabb;
 use crate::constant;
+
 
 pub trait DVec3Ext {
     fn random() -> DVec3;
@@ -61,5 +65,14 @@ impl DVec3Ext for DVec3 {
                 return p;
             }
         }
+    }
+}
+
+
+impl Add<Aabb> for DVec3 {
+    type Output = Aabb;
+
+    fn add(self, aabb: Aabb) -> Self::Output {
+        aabb + self
     }
 }

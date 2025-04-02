@@ -11,7 +11,7 @@ pub struct Ray {
 }
 
 impl Ray {
-    pub fn new(origin: Point3, direction: DVec3) -> Ray {
+    pub fn new_without_time(origin: Point3, direction: DVec3) -> Ray {
         Ray {
             orig: origin,
             dir: direction,

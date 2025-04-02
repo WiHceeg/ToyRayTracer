@@ -21,6 +21,7 @@ mod material;
 mod perlin;
 mod point3;
 mod shape;
+mod transform;
 mod ray;
 mod sphere;
 mod texture;
@@ -33,6 +34,7 @@ use color::Color;
 use dvec3::DVec3Ext;
 use enums::Scene;
 use glam::DVec3;
+use hittable::Hittable;
 use hittable_list::HittableList;
 use material::{Dielectric, DiffuseLight, Lambertian, Metal};
 use point3::Point3;
@@ -40,6 +42,7 @@ use shape::{Annulus, Ellipse, Quad, Tri};
 use rand::Rng;
 use sphere::Sphere;
 use texture::{CheckerTexture, ImageTexture, NoiseTexture};
+use transform::{RotateY, Translate};
 
 fn bouncing_spheres() -> anyhow::Result<()> {
     let mut world = HittableList::new();
@@ -378,8 +381,15 @@ fn cornell_box() -> anyhow::Result<()> {
     world.add(Arc::new(Quad::new(Point3::new(555.0, 555.0, 555.0), DVec3::new(-555.0, 0.0, 0.0), DVec3::new(0.0, 0.0, -555.0), white.clone())));
     world.add(Arc::new(Quad::new(Point3::new(0.0, 0.0, 555.0), DVec3::new(555.0, 0.0, 0.0), DVec3::new(0.0, 555.0, 0.0), white.clone())));
     
-    world.add(Arc::new(Quad::cuboid(Point3::new(130.0, 0.0, 65.0), Point3::new(295.0, 165.0, 230.0), white.clone())));
-    world.add(Arc::new(Quad::cuboid(Point3::new(265.0, 0.0, 295.0), Point3::new(430.0, 330.0, 460.0), white)));
+    let mut box1: Arc<dyn Hittable> = Arc::new(Quad::cuboid(Point3::new(0.0, 0.0, 0.0), Point3::new(165.0, 330.0, 165.0), white.clone()));
+    box1 = Arc::new(RotateY::new(box1, 15.0));
+    box1 = Arc::new(Translate::new(box1, DVec3::new(265.0, 0.0, 295.0)));
+    world.add(box1);
+
+    let mut box2: Arc<dyn Hittable> = Arc::new(Quad::cuboid(Point3::new(0.0, 0.0, 0.0), Point3::new(165.0, 165.0, 165.0), white));
+    box2 = Arc::new(RotateY::new(box2, -18.0));
+    box2 = Arc::new(Translate::new(box2, DVec3::new(130.0, 0.0, 65.0)));
+    world.add(box2);
 
     let mut cam = Camera::default();
     cam.aspect_ratio = config_cornell_box::ASPECT_RATIO;
