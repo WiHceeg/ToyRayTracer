@@ -1,3 +1,6 @@
+use std::ops::{Add, AddAssign};
+
+
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Interval {
     pub min: f64,
@@ -69,5 +72,33 @@ impl Interval {
 impl Default for Interval {
     fn default() -> Self {
         Self::EMPTY
+    }
+}
+
+impl Add<f64> for Interval {
+    type Output = Self;
+
+    fn add(self, displacement: f64) -> Self::Output {
+        Self {
+            min: self.min + displacement,
+            max: self.max + displacement,
+        }
+    }
+}
+
+impl AddAssign<f64> for Interval {
+    fn add_assign(&mut self, displacement: f64) {
+        self.min += displacement;
+        self.max += displacement;
+    }
+}
+
+impl Add<Interval> for f64 {
+    type Output = Interval;
+    fn add(self, interval: Interval) -> Self::Output {
+        Interval {
+            min: self + interval.min,
+            max: self + interval.max,
+        }
     }
 }
