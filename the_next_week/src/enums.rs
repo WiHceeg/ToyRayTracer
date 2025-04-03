@@ -7,6 +7,7 @@ pub enum Scene {
     Shapes,    
     SimpleLight,
     CornellBox,
+    CornellSmoke,
 }
 
 pub enum NoiseType {

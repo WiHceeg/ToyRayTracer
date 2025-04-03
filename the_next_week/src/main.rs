@@ -6,11 +6,13 @@ mod config;
 mod config_bouncing_spheres;
 mod config_checkered_spheres;
 mod config_cornell_box;
+mod config_cornell_smoke;
 mod config_earth;
 mod config_perlin_spheres;
 mod config_shapes;
 mod config_simple_light;
 mod constant;
+mod constant_medium;
 mod dvec3;
 mod enums;
 mod hit_record;
@@ -31,6 +33,7 @@ use std::sync::Arc;
 use bvh::BvhNode;
 use camera::Camera;
 use color::Color;
+use constant_medium::ConstantMedium;
 use dvec3::DVec3Ext;
 use enums::Scene;
 use glam::DVec3;
@@ -411,6 +414,51 @@ fn cornell_box() -> anyhow::Result<()> {
 }
 
 
+fn cornell_smoke() -> anyhow::Result<()> {
+    let mut world = HittableList::new();
+    
+    let red = Arc::new(Lambertian::new_from_solid_color(Color::new(0.65, 0.05, 0.05)));
+    let white = Arc::new(Lambertian::new_from_solid_color(Color::new(0.73, 0.73, 0.73)));
+    let green = Arc::new(Lambertian::new_from_solid_color(Color::new(0.12, 0.45, 0.15)));
+    let light = Arc::new(DiffuseLight::new_from_solid_color(Color::new(7.0, 7.0, 7.0)));
+
+    world.add(Arc::new(Quad::new(Point3::new(555.0, 0.0, 0.0), DVec3::new(0.0, 555.0, 0.0), DVec3::new(0.0, 0.0, 555.0), green)));
+    world.add(Arc::new(Quad::new(Point3::new(0.0, 0.0, 0.0), DVec3::new(0.0, 555.0, 0.0), DVec3::new(0.0, 0.0, 555.0), red)));
+    world.add(Arc::new(Quad::new(Point3::new(113.0, 554.0, 127.0), DVec3::new(330.0, 0.0, 0.0), DVec3::new(0.0, 0.0, 305.0), light)));
+    world.add(Arc::new(Quad::new(Point3::new(0.0, 555.0, 0.0), DVec3::new(555.0, 0.0, 0.0), DVec3::new(0.0, 0.0, 555.0), white.clone())));
+    world.add(Arc::new(Quad::new(Point3::new(0.0, 0.0, 0.0), DVec3::new(555.0, 0.0, 0.0), DVec3::new(0.0, 0.0, 555.0), white.clone())));
+    world.add(Arc::new(Quad::new(Point3::new(0.0, 0.0, 555.0), DVec3::new(555.0, 0.0, 0.0), DVec3::new(0.0, 555.0, 0.0), white.clone())));
+    
+    let mut box1: Arc<dyn Hittable> = Arc::new(Quad::cuboid(Point3::new(0.0, 0.0, 0.0), Point3::new(165.0, 330.0, 165.0), white.clone()));
+    box1 = Arc::new(RotateY::new(box1, 15.0));
+    box1 = Arc::new(Translate::new(box1, DVec3::new(265.0, 0.0, 295.0)));
+
+    let mut box2: Arc<dyn Hittable> = Arc::new(Quad::cuboid(Point3::new(0.0, 0.0, 0.0), Point3::new(165.0, 165.0, 165.0), white));
+    box2 = Arc::new(RotateY::new(box2, -18.0));
+    box2 = Arc::new(Translate::new(box2, DVec3::new(130.0, 0.0, 65.0)));
+    
+    world.add(Arc::new(ConstantMedium::new_from_solid_color(box1, 0.01, Color::ZERO)));
+    world.add(Arc::new(ConstantMedium::new_from_solid_color(box2, 0.01, Color::ONE)));
+
+    let mut cam = Camera::default();
+    cam.aspect_ratio = config_cornell_smoke::ASPECT_RATIO;
+    cam.image_width = config_cornell_smoke::IMAGE_WIDTH;
+    cam.samples_per_pixel = config_cornell_smoke::SAMPLES_PER_PIXEL;
+    cam.max_depth = config_cornell_smoke::MAX_DEPTH;
+    cam.background = config_cornell_smoke::BACKGROUND;
+    cam.enable_gradient_sky = config_cornell_smoke::ENABLE_GRADIENT_SKY;
+
+    cam.vfov = config_cornell_smoke::V_FOV;
+    cam.lookfrom = config_cornell_smoke::LOOKFROM;
+    cam.lookat = config_cornell_smoke::LOOKAT;
+    cam.vup = config_cornell_smoke::V_UP;
+
+    cam.defocus_angle = config_cornell_smoke::DEFOCUS_ANGLE;
+    cam.focus_dist = config_cornell_smoke::FOCUS_DIST;
+
+    cam.render(&world)    
+}
+
 fn main() {
     let res = match config::TARGET_SCENE {
         Scene::BouncingSpheres => bouncing_spheres(),
@@ -421,6 +469,7 @@ fn main() {
         Scene::Shapes => shapes(),
         Scene::SimpleLight => simple_light(),
         Scene::CornellBox => cornell_box(),
+        Scene::CornellSmoke => cornell_smoke(),
     };
 
     match res {
