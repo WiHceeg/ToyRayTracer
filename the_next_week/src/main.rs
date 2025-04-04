@@ -3,15 +3,7 @@ mod bvh;
 mod camera;
 mod color;
 mod config;
-mod config_bouncing_spheres;
-mod config_checkered_spheres;
-mod config_cornell_box;
-mod config_cornell_smoke;
-mod config_earth;
-mod config_final_scene;
-mod config_perlin_spheres;
-mod config_shapes;
-mod config_simple_light;
+
 mod constant;
 mod constant_medium;
 mod dvec3;
@@ -139,20 +131,20 @@ fn bouncing_spheres() -> anyhow::Result<()> {
     }
 
     let mut cam = Camera::default();
-    cam.aspect_ratio = config_bouncing_spheres::ASPECT_RATIO;
-    cam.image_width = config_bouncing_spheres::IMAGE_WIDTH;
-    cam.samples_per_pixel = config_bouncing_spheres::SAMPLES_PER_PIXEL;
-    cam.max_depth = config_bouncing_spheres::MAX_DEPTH;
-    cam.background = config_bouncing_spheres::BACKGROUND;
-    cam.enable_gradient_sky = config_bouncing_spheres::ENABLE_GRADIENT_SKY;
+    cam.aspect_ratio = config::config_bouncing_spheres::ASPECT_RATIO;
+    cam.image_width = config::config_bouncing_spheres::IMAGE_WIDTH;
+    cam.samples_per_pixel = config::config_bouncing_spheres::SAMPLES_PER_PIXEL;
+    cam.max_depth = config::config_bouncing_spheres::MAX_DEPTH;
+    cam.background = config::config_bouncing_spheres::BACKGROUND;
+    cam.enable_gradient_sky = config::config_bouncing_spheres::ENABLE_GRADIENT_SKY;
 
-    cam.vfov = config_bouncing_spheres::V_FOV;
-    cam.lookfrom = config_bouncing_spheres::LOOKFROM;
-    cam.lookat = config_bouncing_spheres::LOOKAT;
-    cam.vup = config_bouncing_spheres::V_UP;
+    cam.vfov = config::config_bouncing_spheres::V_FOV;
+    cam.lookfrom = config::config_bouncing_spheres::LOOKFROM;
+    cam.lookat = config::config_bouncing_spheres::LOOKAT;
+    cam.vup = config::config_bouncing_spheres::V_UP;
 
-    cam.defocus_angle = config_bouncing_spheres::DEFOCUS_ANGLE;
-    cam.focus_dist = config_bouncing_spheres::FOCUS_DIST;
+    cam.defocus_angle = config::config_bouncing_spheres::DEFOCUS_ANGLE;
+    cam.focus_dist = config::config_bouncing_spheres::FOCUS_DIST;
 
     cam.render(&world)
 }
@@ -183,20 +175,20 @@ fn checkered_spheres() -> anyhow::Result<()> {
     }
 
     let mut cam = Camera::default();
-    cam.aspect_ratio = config_checkered_spheres::ASPECT_RATIO;
-    cam.image_width = config_checkered_spheres::IMAGE_WIDTH;
-    cam.samples_per_pixel = config_checkered_spheres::SAMPLES_PER_PIXEL;
-    cam.max_depth = config_checkered_spheres::MAX_DEPTH;
-    cam.background = config_checkered_spheres::BACKGROUND;
-    cam.enable_gradient_sky = config_checkered_spheres::ENABLE_GRADIENT_SKY;
+    cam.aspect_ratio = config::config_checkered_spheres::ASPECT_RATIO;
+    cam.image_width = config::config_checkered_spheres::IMAGE_WIDTH;
+    cam.samples_per_pixel = config::config_checkered_spheres::SAMPLES_PER_PIXEL;
+    cam.max_depth = config::config_checkered_spheres::MAX_DEPTH;
+    cam.background = config::config_checkered_spheres::BACKGROUND;
+    cam.enable_gradient_sky = config::config_checkered_spheres::ENABLE_GRADIENT_SKY;
 
-    cam.vfov = config_checkered_spheres::V_FOV;
-    cam.lookfrom = config_checkered_spheres::LOOKFROM;
-    cam.lookat = config_checkered_spheres::LOOKAT;
-    cam.vup = config_checkered_spheres::V_UP;
+    cam.vfov = config::config_checkered_spheres::V_FOV;
+    cam.lookfrom = config::config_checkered_spheres::LOOKFROM;
+    cam.lookat = config::config_checkered_spheres::LOOKAT;
+    cam.vup = config::config_checkered_spheres::V_UP;
 
-    cam.defocus_angle = config_checkered_spheres::DEFOCUS_ANGLE;
-    cam.focus_dist = config_checkered_spheres::FOCUS_DIST;
+    cam.defocus_angle = config::config_checkered_spheres::DEFOCUS_ANGLE;
+    cam.focus_dist = config::config_checkered_spheres::FOCUS_DIST;
 
     cam.render(&world)
 }
@@ -209,27 +201,27 @@ fn earth() -> anyhow::Result<()> {
     world.add(globe);
 
     let mut cam = Camera::default();
-    cam.aspect_ratio = config_earth::ASPECT_RATIO;
-    cam.image_width = config_earth::IMAGE_WIDTH;
-    cam.samples_per_pixel = config_earth::SAMPLES_PER_PIXEL;
-    cam.max_depth = config_earth::MAX_DEPTH;
-    cam.background = config_earth::BACKGROUND;
-    cam.enable_gradient_sky = config_earth::ENABLE_GRADIENT_SKY;
+    cam.aspect_ratio = config::config_earth::ASPECT_RATIO;
+    cam.image_width = config::config_earth::IMAGE_WIDTH;
+    cam.samples_per_pixel = config::config_earth::SAMPLES_PER_PIXEL;
+    cam.max_depth = config::config_earth::MAX_DEPTH;
+    cam.background = config::config_earth::BACKGROUND;
+    cam.enable_gradient_sky = config::config_earth::ENABLE_GRADIENT_SKY;
 
-    cam.vfov = config_earth::V_FOV;
-    cam.lookfrom = config_earth::LOOKFROM;
-    cam.lookat = config_earth::LOOKAT;
-    cam.vup = config_earth::V_UP;
+    cam.vfov = config::config_earth::V_FOV;
+    cam.lookfrom = config::config_earth::LOOKFROM;
+    cam.lookat = config::config_earth::LOOKAT;
+    cam.vup = config::config_earth::V_UP;
 
-    cam.defocus_angle = config_earth::DEFOCUS_ANGLE;
-    cam.focus_dist = config_earth::FOCUS_DIST;
+    cam.defocus_angle = config::config_earth::DEFOCUS_ANGLE;
+    cam.focus_dist = config::config_earth::FOCUS_DIST;
 
     cam.render(&world)
 }
 
 fn perlin_spheres() -> anyhow::Result<()> {
     let mut world = HittableList::new();
-    let texture = Arc::new(NoiseTexture::new(config_perlin_spheres::INPUT_POINT_SCALE));
+    let texture = Arc::new(NoiseTexture::new(config::config_perlin_spheres::INPUT_POINT_SCALE));
 
     world.add(Arc::new(Sphere::new_static(
         Point3::new(0.0, -1000.0, 0.0),
@@ -242,20 +234,20 @@ fn perlin_spheres() -> anyhow::Result<()> {
         Arc::new(Lambertian::new_from_texture(texture)),
     )));
     let mut cam = Camera::default();
-    cam.aspect_ratio = config_perlin_spheres::ASPECT_RATIO;
-    cam.image_width = config_perlin_spheres::IMAGE_WIDTH;
-    cam.samples_per_pixel = config_perlin_spheres::SAMPLES_PER_PIXEL;
-    cam.max_depth = config_perlin_spheres::MAX_DEPTH;
-    cam.background = config_perlin_spheres::BACKGROUND;
-    cam.enable_gradient_sky = config_perlin_spheres::ENABLE_GRADIENT_SKY;
+    cam.aspect_ratio = config::config_perlin_spheres::ASPECT_RATIO;
+    cam.image_width = config::config_perlin_spheres::IMAGE_WIDTH;
+    cam.samples_per_pixel = config::config_perlin_spheres::SAMPLES_PER_PIXEL;
+    cam.max_depth = config::config_perlin_spheres::MAX_DEPTH;
+    cam.background = config::config_perlin_spheres::BACKGROUND;
+    cam.enable_gradient_sky = config::config_perlin_spheres::ENABLE_GRADIENT_SKY;
 
-    cam.vfov = config_perlin_spheres::V_FOV;
-    cam.lookfrom = config_perlin_spheres::LOOKFROM;
-    cam.lookat = config_perlin_spheres::LOOKAT;
-    cam.vup = config_perlin_spheres::V_UP;
+    cam.vfov = config::config_perlin_spheres::V_FOV;
+    cam.lookfrom = config::config_perlin_spheres::LOOKFROM;
+    cam.lookat = config::config_perlin_spheres::LOOKAT;
+    cam.vup = config::config_perlin_spheres::V_UP;
 
-    cam.defocus_angle = config_perlin_spheres::DEFOCUS_ANGLE;
-    cam.focus_dist = config_perlin_spheres::FOCUS_DIST;
+    cam.defocus_angle = config::config_perlin_spheres::DEFOCUS_ANGLE;
+    cam.focus_dist = config::config_perlin_spheres::FOCUS_DIST;
 
     cam.render(&world)
 }
@@ -277,20 +269,20 @@ fn quads() -> anyhow::Result<()> {
 
 
     let mut cam = Camera::default();
-    cam.aspect_ratio = config_shapes::ASPECT_RATIO;
-    cam.image_width = config_shapes::IMAGE_WIDTH;
-    cam.samples_per_pixel = config_shapes::SAMPLES_PER_PIXEL;
-    cam.max_depth = config_shapes::MAX_DEPTH;
-    cam.background = config_shapes::BACKGROUND;
-    cam.enable_gradient_sky = config_shapes::ENABLE_GRADIENT_SKY;
+    cam.aspect_ratio = config::config_shapes::ASPECT_RATIO;
+    cam.image_width = config::config_shapes::IMAGE_WIDTH;
+    cam.samples_per_pixel = config::config_shapes::SAMPLES_PER_PIXEL;
+    cam.max_depth = config::config_shapes::MAX_DEPTH;
+    cam.background = config::config_shapes::BACKGROUND;
+    cam.enable_gradient_sky = config::config_shapes::ENABLE_GRADIENT_SKY;
 
-    cam.vfov = config_shapes::V_FOV;
-    cam.lookfrom = config_shapes::LOOKFROM;
-    cam.lookat = config_shapes::LOOKAT;
-    cam.vup = config_shapes::V_UP;
+    cam.vfov = config::config_shapes::V_FOV;
+    cam.lookfrom = config::config_shapes::LOOKFROM;
+    cam.lookat = config::config_shapes::LOOKAT;
+    cam.vup = config::config_shapes::V_UP;
 
-    cam.defocus_angle = config_shapes::DEFOCUS_ANGLE;
-    cam.focus_dist = config_shapes::FOCUS_DIST;
+    cam.defocus_angle = config::config_shapes::DEFOCUS_ANGLE;
+    cam.focus_dist = config::config_shapes::FOCUS_DIST;
 
     cam.render(&world)
 
@@ -314,20 +306,20 @@ fn shapes() -> anyhow::Result<()> {
 
 
     let mut cam = Camera::default();
-    cam.aspect_ratio = config_shapes::ASPECT_RATIO;
-    cam.image_width = config_shapes::IMAGE_WIDTH;
-    cam.samples_per_pixel = config_shapes::SAMPLES_PER_PIXEL;
-    cam.max_depth = config_shapes::MAX_DEPTH;
-    cam.background = config_shapes::BACKGROUND;
-    cam.enable_gradient_sky = config_shapes::ENABLE_GRADIENT_SKY;
+    cam.aspect_ratio = config::config_shapes::ASPECT_RATIO;
+    cam.image_width = config::config_shapes::IMAGE_WIDTH;
+    cam.samples_per_pixel = config::config_shapes::SAMPLES_PER_PIXEL;
+    cam.max_depth = config::config_shapes::MAX_DEPTH;
+    cam.background = config::config_shapes::BACKGROUND;
+    cam.enable_gradient_sky = config::config_shapes::ENABLE_GRADIENT_SKY;
 
-    cam.vfov = config_shapes::V_FOV;
-    cam.lookfrom = config_shapes::LOOKFROM;
-    cam.lookat = config_shapes::LOOKAT;
-    cam.vup = config_shapes::V_UP;
+    cam.vfov = config::config_shapes::V_FOV;
+    cam.lookfrom = config::config_shapes::LOOKFROM;
+    cam.lookat = config::config_shapes::LOOKAT;
+    cam.vup = config::config_shapes::V_UP;
 
-    cam.defocus_angle = config_shapes::DEFOCUS_ANGLE;
-    cam.focus_dist = config_shapes::FOCUS_DIST;
+    cam.defocus_angle = config::config_shapes::DEFOCUS_ANGLE;
+    cam.focus_dist = config::config_shapes::FOCUS_DIST;
 
     cam.render(&world)
 
@@ -336,7 +328,7 @@ fn shapes() -> anyhow::Result<()> {
 fn simple_light() -> anyhow::Result<()> {
     let mut world = HittableList::new();
     
-    let perlin_texture = Arc::new(NoiseTexture::new(config_simple_light::INPUT_POINT_SCALE));
+    let perlin_texture = Arc::new(NoiseTexture::new(config::config_simple_light::INPUT_POINT_SCALE));
     world.add(Arc::new(Sphere::new_static(
         Point3::new(0.0, -1000.0, 0.0),
         1000.0,
@@ -352,20 +344,20 @@ fn simple_light() -> anyhow::Result<()> {
     world.add(Arc::new(Sphere::new_static(Point3::new(0.0, 7.0, 0.0), 2.0, difflight.clone())));
     world.add(Arc::new(Quad::new(Point3::new(3.0, 1.0, -2.0), DVec3::new(2.0, 0.0, 0.0), DVec3::new(0.0, 2.0, 0.0), difflight)));
     let mut cam = Camera::default();
-    cam.aspect_ratio = config_simple_light::ASPECT_RATIO;
-    cam.image_width = config_simple_light::IMAGE_WIDTH;
-    cam.samples_per_pixel = config_simple_light::SAMPLES_PER_PIXEL;
-    cam.max_depth = config_simple_light::MAX_DEPTH;
-    cam.background = config_simple_light::BACKGROUND;
-    cam.enable_gradient_sky = config_simple_light::ENABLE_GRADIENT_SKY;
+    cam.aspect_ratio = config::config_simple_light::ASPECT_RATIO;
+    cam.image_width = config::config_simple_light::IMAGE_WIDTH;
+    cam.samples_per_pixel = config::config_simple_light::SAMPLES_PER_PIXEL;
+    cam.max_depth = config::config_simple_light::MAX_DEPTH;
+    cam.background = config::config_simple_light::BACKGROUND;
+    cam.enable_gradient_sky = config::config_simple_light::ENABLE_GRADIENT_SKY;
 
-    cam.vfov = config_simple_light::V_FOV;
-    cam.lookfrom = config_simple_light::LOOKFROM;
-    cam.lookat = config_simple_light::LOOKAT;
-    cam.vup = config_simple_light::V_UP;
+    cam.vfov = config::config_simple_light::V_FOV;
+    cam.lookfrom = config::config_simple_light::LOOKFROM;
+    cam.lookat = config::config_simple_light::LOOKAT;
+    cam.vup = config::config_simple_light::V_UP;
 
-    cam.defocus_angle = config_simple_light::DEFOCUS_ANGLE;
-    cam.focus_dist = config_simple_light::FOCUS_DIST;
+    cam.defocus_angle = config::config_simple_light::DEFOCUS_ANGLE;
+    cam.focus_dist = config::config_simple_light::FOCUS_DIST;
 
     cam.render(&world)    
 }
@@ -396,20 +388,20 @@ fn cornell_box() -> anyhow::Result<()> {
     world.add(box2);
 
     let mut cam = Camera::default();
-    cam.aspect_ratio = config_cornell_box::ASPECT_RATIO;
-    cam.image_width = config_cornell_box::IMAGE_WIDTH;
-    cam.samples_per_pixel = config_cornell_box::SAMPLES_PER_PIXEL;
-    cam.max_depth = config_cornell_box::MAX_DEPTH;
-    cam.background = config_cornell_box::BACKGROUND;
-    cam.enable_gradient_sky = config_cornell_box::ENABLE_GRADIENT_SKY;
+    cam.aspect_ratio = config::config_cornell_box::ASPECT_RATIO;
+    cam.image_width = config::config_cornell_box::IMAGE_WIDTH;
+    cam.samples_per_pixel = config::config_cornell_box::SAMPLES_PER_PIXEL;
+    cam.max_depth = config::config_cornell_box::MAX_DEPTH;
+    cam.background = config::config_cornell_box::BACKGROUND;
+    cam.enable_gradient_sky = config::config_cornell_box::ENABLE_GRADIENT_SKY;
 
-    cam.vfov = config_cornell_box::V_FOV;
-    cam.lookfrom = config_cornell_box::LOOKFROM;
-    cam.lookat = config_cornell_box::LOOKAT;
-    cam.vup = config_cornell_box::V_UP;
+    cam.vfov = config::config_cornell_box::V_FOV;
+    cam.lookfrom = config::config_cornell_box::LOOKFROM;
+    cam.lookat = config::config_cornell_box::LOOKAT;
+    cam.vup = config::config_cornell_box::V_UP;
 
-    cam.defocus_angle = config_cornell_box::DEFOCUS_ANGLE;
-    cam.focus_dist = config_cornell_box::FOCUS_DIST;
+    cam.defocus_angle = config::config_cornell_box::DEFOCUS_ANGLE;
+    cam.focus_dist = config::config_cornell_box::FOCUS_DIST;
 
     cam.render(&world)    
 }
@@ -442,20 +434,20 @@ fn cornell_smoke() -> anyhow::Result<()> {
     world.add(Arc::new(ConstantMedium::new_from_solid_color(box2, 0.01, Color::ONE)));
 
     let mut cam = Camera::default();
-    cam.aspect_ratio = config_cornell_smoke::ASPECT_RATIO;
-    cam.image_width = config_cornell_smoke::IMAGE_WIDTH;
-    cam.samples_per_pixel = config_cornell_smoke::SAMPLES_PER_PIXEL;
-    cam.max_depth = config_cornell_smoke::MAX_DEPTH;
-    cam.background = config_cornell_smoke::BACKGROUND;
-    cam.enable_gradient_sky = config_cornell_smoke::ENABLE_GRADIENT_SKY;
+    cam.aspect_ratio = config::config_cornell_smoke::ASPECT_RATIO;
+    cam.image_width = config::config_cornell_smoke::IMAGE_WIDTH;
+    cam.samples_per_pixel = config::config_cornell_smoke::SAMPLES_PER_PIXEL;
+    cam.max_depth = config::config_cornell_smoke::MAX_DEPTH;
+    cam.background = config::config_cornell_smoke::BACKGROUND;
+    cam.enable_gradient_sky = config::config_cornell_smoke::ENABLE_GRADIENT_SKY;
 
-    cam.vfov = config_cornell_smoke::V_FOV;
-    cam.lookfrom = config_cornell_smoke::LOOKFROM;
-    cam.lookat = config_cornell_smoke::LOOKAT;
-    cam.vup = config_cornell_smoke::V_UP;
+    cam.vfov = config::config_cornell_smoke::V_FOV;
+    cam.lookfrom = config::config_cornell_smoke::LOOKFROM;
+    cam.lookat = config::config_cornell_smoke::LOOKAT;
+    cam.vup = config::config_cornell_smoke::V_UP;
 
-    cam.defocus_angle = config_cornell_smoke::DEFOCUS_ANGLE;
-    cam.focus_dist = config_cornell_smoke::FOCUS_DIST;
+    cam.defocus_angle = config::config_cornell_smoke::DEFOCUS_ANGLE;
+    cam.focus_dist = config::config_cornell_smoke::FOCUS_DIST;
 
     cam.render(&world)    
 }
@@ -513,7 +505,7 @@ fn final_scene(image_width: usize, samples_per_pixel: usize, max_depth: usize) -
     world.add(Arc::new(Sphere::new_static(Point3::new(400.0, 200.0, 400.0), 100.0, emat)));
     
     // 噪声纹理球
-    let perlin_texture = Arc::new(NoiseTexture::new(config_final_scene::INPUT_POINT_SCALE));
+    let perlin_texture = Arc::new(NoiseTexture::new(config::config_final_scene::INPUT_POINT_SCALE));
     world.add(Arc::new(Sphere::new_static(Point3::new(220.0, 280.0, 300.0), 80.0, Arc::new(Lambertian::new_from_texture(perlin_texture)))));
 
     // 随机小球群组成的立方体
@@ -529,20 +521,20 @@ fn final_scene(image_width: usize, samples_per_pixel: usize, max_depth: usize) -
     )));
 
     let mut cam = Camera::default();
-    cam.aspect_ratio = config_final_scene::ASPECT_RATIO;
+    cam.aspect_ratio = config::config_final_scene::ASPECT_RATIO;
     cam.image_width = image_width;
     cam.samples_per_pixel = samples_per_pixel;
     cam.max_depth = max_depth;
-    cam.background = config_final_scene::BACKGROUND;
-    cam.enable_gradient_sky = config_final_scene::ENABLE_GRADIENT_SKY;
+    cam.background = config::config_final_scene::BACKGROUND;
+    cam.enable_gradient_sky = config::config_final_scene::ENABLE_GRADIENT_SKY;
 
-    cam.vfov = config_final_scene::V_FOV;
-    cam.lookfrom = config_final_scene::LOOKFROM;
-    cam.lookat = config_final_scene::LOOKAT;
-    cam.vup = config_final_scene::V_UP;
+    cam.vfov = config::config_final_scene::V_FOV;
+    cam.lookfrom = config::config_final_scene::LOOKFROM;
+    cam.lookat = config::config_final_scene::LOOKAT;
+    cam.vup = config::config_final_scene::V_UP;
 
-    cam.defocus_angle = config_final_scene::DEFOCUS_ANGLE;
-    cam.focus_dist = config_final_scene::FOCUS_DIST;
+    cam.defocus_angle = config::config_final_scene::DEFOCUS_ANGLE;
+    cam.focus_dist = config::config_final_scene::FOCUS_DIST;
 
     cam.render(&world)    
 }
@@ -558,8 +550,8 @@ fn main() {
         Scene::SimpleLight => simple_light(),
         Scene::CornellBox => cornell_box(),
         Scene::CornellSmoke => cornell_smoke(),
-        Scene::FinalSceneLD => final_scene(config_final_scene::IMAGE_WIDTH_LD, config_final_scene::SAMPLES_PER_PIXEL_LD, config_final_scene::MAX_DEPTH_LD),
-        Scene::FinalSceneHD => final_scene(config_final_scene::IMAGE_WIDTH_HD, config_final_scene::SAMPLES_PER_PIXEL_HD, config_final_scene::MAX_DEPTH_HD),
+        Scene::FinalSceneLD => final_scene(config::config_final_scene::IMAGE_WIDTH_LD, config::config_final_scene::SAMPLES_PER_PIXEL_LD, config::config_final_scene::MAX_DEPTH_LD),
+        Scene::FinalSceneHD => final_scene(config::config_final_scene::IMAGE_WIDTH_HD, config::config_final_scene::SAMPLES_PER_PIXEL_HD, config::config_final_scene::MAX_DEPTH_HD),
     };
 
     match res {
