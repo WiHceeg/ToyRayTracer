@@ -1,0 +1,11 @@
+[package]
+name = "the_rest_of_your_life"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.97"
+glam = "0.30.0"
+image = "0.25.6"
+rand = "0.9.0"
+rayon = "1.10.0"
