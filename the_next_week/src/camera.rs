@@ -1,8 +1,10 @@
 use glam::DVec3;
+use rayon::prelude::*;
 
 use std::fs;
 use std::io;
 use std::io::Write;
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time;
 
 use crate::color::Color;
@@ -65,16 +67,29 @@ impl Camera {
             self.image_width, self.image_height
         )?;
 
-        for j in 0..self.image_height {
-            print!("\rScanlines remaining: {} ", self.image_height - j);
-            io::stdout().flush()?;
-            for i in 0..self.image_width {
-                let mut pixel_color = Color::ZERO;
-                for _ in 0..self.samples_per_pixel {
-                    let r = self.get_ray(i, j);
-                    pixel_color += self.ray_color(&r, self.max_depth, world);
+        let counter = AtomicUsize::new(0);
+        let pixels: Vec<Vec<Color>> = (0..self.image_height)
+            .into_par_iter()
+            .map(|j| {
+                let mut row = Vec::with_capacity(self.image_width);
+                for i in 0..self.image_width {
+                    let mut pixel_color = Color::ZERO;
+                    for _ in 0..self.samples_per_pixel {
+                        let r = self.get_ray(i, j);
+                        pixel_color += self.ray_color(&r, self.max_depth, world);
+                    }
+                    row.push(self.pixel_samples_scale * pixel_color);
                 }
-                (self.pixel_samples_scale * pixel_color).write_color(&mut writer)?;
+                let finished_count = counter.fetch_add(1, Ordering::Relaxed) + 1;
+                print!("\rScanlines remaining: {} ", self.image_height - finished_count);
+                io::stdout().flush().expect("Failed to flush stdout");
+                row
+            })
+            .collect();
+
+        for row in pixels {
+            for color in row {
+                color.write_color(&mut writer)?;
             }
         }
 

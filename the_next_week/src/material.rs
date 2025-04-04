@@ -9,7 +9,7 @@ use crate::point3::Point3;
 use crate::ray::Ray;
 use crate::texture::{SolidColor, Texture};
 
-pub trait Material {
+pub trait Material: Send + Sync {
     fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)>;
     fn emitted(&self, _u: f64, _v: f64, _p: Point3) -> Option<Color> {
         None
