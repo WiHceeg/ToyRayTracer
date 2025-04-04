@@ -9,7 +9,7 @@ use crate::interval::Interval;
 use crate::perlin::Perlin;
 use crate::point3::Point3;
 
-pub trait Texture {
+pub trait Texture: Send + Sync {
     fn value(&self, u: f64, v: f64, p: Point3) -> Color;
 }
 
@@ -19,7 +19,7 @@ pub struct SolidColor {
 
 impl SolidColor {
     pub fn new(albedo: Color) -> SolidColor {
-        SolidColor { albedo: albedo }
+        SolidColor { albedo }
     }
 }
 
@@ -96,7 +96,7 @@ impl NoiseTexture {
     pub fn new(scale: f64) -> NoiseTexture {
         NoiseTexture {
             noise: Perlin::new(),
-            scale: scale,
+            scale,
         }
     }
 }

@@ -6,6 +6,7 @@ use crate::config;
 use crate::constant::PERLIN_POINT_COUNT;
 use crate::enums::NoiseType;
 use crate::point3::Point3;
+use crate::random_number_generator::{get_random_generator, random_range};
 pub struct Perlin {
     randfloat: Option<[f64; PERLIN_POINT_COUNT]>,
     randvec: Option<[DVec3; PERLIN_POINT_COUNT]>,
@@ -16,30 +17,29 @@ pub struct Perlin {
 
 impl Perlin {
     pub fn new() -> Perlin {
-        let mut rng = rand::rng();
 
         let randfloat: Option<[f64; PERLIN_POINT_COUNT]>;
         let randvec: Option<[DVec3; PERLIN_POINT_COUNT]>;
         match config::NOISE_TYPE {
             NoiseType::HashedRandom | NoiseType::TrilinearInterpolation => {
-                randfloat = Some(rng.random());
+                randfloat = Some(get_random_generator().random());
                 randvec = None;
             }
             NoiseType::LatticeRandomVectors | NoiseType::Turbulence | NoiseType::TurbulenceMarble => {
                 randfloat = None;
-                randvec = Some(std::array::from_fn(|_| DVec3::new(rng.random_range(-1.0..1.0), rng.random_range(-1.0..1.0), rng.random_range(-1.0..1.0))));
+                randvec = Some(std::array::from_fn(|_| DVec3::new(random_range(-1.0..1.0), random_range(-1.0..1.0), random_range(-1.0..1.0))));
             }
         }
 
-        let mut perlin_generate_perm = || {
+        let perlin_generate_perm = || {
             let mut perm: [usize; PERLIN_POINT_COUNT] = std::array::from_fn(|x| x);
-            perm.shuffle(&mut rng);
+            perm.shuffle(&mut get_random_generator());
             perm
         };
 
         Perlin {
-            randfloat: randfloat,
-            randvec: randvec,
+            randfloat,
+            randvec,
             perm_x: perlin_generate_perm(),
             perm_y: perlin_generate_perm(),
             perm_z: perlin_generate_perm(),

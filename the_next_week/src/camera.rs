@@ -1,8 +1,10 @@
 use glam::DVec3;
-use rand::Rng;
+use rayon::prelude::*;
+
 use std::fs;
 use std::io;
 use std::io::Write;
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time;
 
 use crate::color::Color;
@@ -13,6 +15,8 @@ use crate::dvec3::DVec3Ext;
 use crate::hittable::Hittable;
 use crate::interval::Interval;
 use crate::point3::Point3;
+use crate::random_number_generator::{random, random_range};
+
 use crate::ray::Ray;
 
 #[derive(Default)]
@@ -63,16 +67,29 @@ impl Camera {
             self.image_width, self.image_height
         )?;
 
-        for j in 0..self.image_height {
-            print!("\rScanlines remaining: {} ", self.image_height - j);
-            io::stdout().flush()?;
-            for i in 0..self.image_width {
-                let mut pixel_color = Color::ZERO;
-                for _ in 0..self.samples_per_pixel {
-                    let r = self.get_ray(i, j);
-                    pixel_color += self.ray_color(&r, self.max_depth, world);
+        let counter = AtomicUsize::new(0);
+        let pixels: Vec<Vec<Color>> = (0..self.image_height)
+            .into_par_iter()
+            .map(|j| {
+                let mut row = Vec::with_capacity(self.image_width);
+                for i in 0..self.image_width {
+                    let mut pixel_color = Color::ZERO;
+                    for _ in 0..self.samples_per_pixel {
+                        let r = self.get_ray(i, j);
+                        pixel_color += self.ray_color(&r, self.max_depth, world);
+                    }
+                    row.push(self.pixel_samples_scale * pixel_color);
                 }
-                (self.pixel_samples_scale * pixel_color).write_color(&mut writer)?;
+                let finished_count = counter.fetch_add(1, Ordering::Relaxed) + 1;
+                print!("\rScanlines remaining: {} ", self.image_height - finished_count);
+                io::stdout().flush().expect("Failed to flush stdout");
+                row
+            })
+            .collect();
+
+        for row in pixels {
+            for color in row {
+                color.write_color(&mut writer)?;
             }
         }
 
@@ -130,13 +147,12 @@ impl Camera {
         // 虚化原理是，从圆盘上无论哪个点往焦平面发射，一定能命中焦平面的目标点，因此焦平面最清晰
         let ray_origin = if self.defocus_angle <= 0.0 {self.center} else {self.defocus_disk_sample()};
         let ray_direction = pixel_sample - ray_origin;
-        let ray_time = rand::random::<f64>();
+        let ray_time = random();
         Ray::new_with_time(ray_origin, ray_direction, ray_time)
     }
 
     fn sample_square() -> DVec3 {
-        let mut rng = rand::rng();
-        DVec3::new(rng.random_range(-0.5..0.5), rng.random_range(-0.5..0.5), 0.)
+        DVec3::new(random_range(-0.5..0.5), random_range(-0.5..0.5), 0.)
     }
 
     fn defocus_disk_sample(&self) -> Point3 {

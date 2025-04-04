@@ -18,6 +18,7 @@ mod point3;
 mod shape;
 mod transform;
 mod ray;
+mod random_number_generator;
 mod sphere;
 mod texture;
 
@@ -35,7 +36,8 @@ use hittable_list::HittableList;
 use material::{Dielectric, DiffuseLight, Lambertian, Metal};
 use point3::Point3;
 use shape::{Annulus, Ellipse, Quad, Tri};
-use rand::Rng;
+use random_number_generator::{random, random_range};
+
 use sphere::Sphere;
 use texture::{CheckerTexture, ImageTexture, NoiseTexture};
 use transform::{RotateY, Translate};
@@ -63,15 +65,14 @@ fn bouncing_spheres() -> anyhow::Result<()> {
         Arc::new(Lambertian::new_from_texture(checker)),
     )));
 
-    let mut rng = rand::rng();
     // 生成 -11 到 10 的随机小球
     for a in -11..11 {
         for b in -11..11 {
-            let choose_mat = rng.random::<f64>();
+            let choose_mat = random();
             let center = Point3::new(
-                a as f64 + 0.9 * rng.random::<f64>(),
+                a as f64 + 0.9 * random(),
                 0.2,
-                b as f64 + 0.9 * rng.random::<f64>(),
+                b as f64 + 0.9 * random(),
             );
 
             // 排除靠近大球的区域
@@ -80,7 +81,7 @@ fn bouncing_spheres() -> anyhow::Result<()> {
                     // 漫反射材质
                     let albedo = Color::random() * Color::random();
                     let sphere_material = Arc::new(Lambertian::new_from_solid_color(albedo));
-                    let end_center = center + DVec3::new(0.0, rng.random_range(0.0..0.5), 0.0);
+                    let end_center = center + DVec3::new(0.0, random_range(0.0..0.5), 0.0);
                     world.add(Arc::new(Sphere::new_moving(
                         center,
                         end_center,
@@ -89,8 +90,8 @@ fn bouncing_spheres() -> anyhow::Result<()> {
                     )));
                 } else if choose_mat < 0.95 {
                     // 金属材质
-                    let albedo = Color::random_range_with_rng(0.5, 1.0, &mut rng);
-                    let fuzz = rng.random_range(0.0..0.5);
+                    let albedo = Color::random_range(0.5, 1.0);
+                    let fuzz = random_range(0.0..0.5);
                     let sphere_material = Arc::new(Metal::new(albedo, fuzz));
                     world.add(Arc::new(Sphere::new_static(center, 0.2, sphere_material)));
                 } else {
@@ -458,7 +459,7 @@ fn final_scene(image_width: usize, samples_per_pixel: usize, max_depth: usize) -
     let mut boxes1 = HittableList::new();
     let ground = Arc::new(Lambertian::new_from_solid_color(Color::new(0.48, 0.83, 0.53)));
     let boxes_per_side  = 20;
-    let mut rng = rand::rng();
+
     for i in 0..boxes_per_side {
         for j in 0..boxes_per_side {
             let w = 100.0;
@@ -466,7 +467,7 @@ fn final_scene(image_width: usize, samples_per_pixel: usize, max_depth: usize) -
             let z0 = -1000.0 + j as f64 * w;
             let y0 = 1.0;
             let x1 = x0 + w;
-            let y1 = rng.random_range(1.0..101.0);
+            let y1 = random_range(1.0..101.0);
             let z1 = z0 + w;
 
             boxes1.add(Arc::new(Quad::cuboid(Point3::new(x0, y0, z0), Point3::new(x1, y1, z1), ground.clone())));
@@ -513,7 +514,7 @@ fn final_scene(image_width: usize, samples_per_pixel: usize, max_depth: usize) -
     let white = Arc::new(Lambertian::new_from_solid_color(Color::new(0.73, 0.73, 0.73)));
     let ns = 1000;
     for _ in 0..ns {
-        boxes2.add(Arc::new(Sphere::new_static(Point3::random_range_with_rng(0.0, 165.0, &mut rng), 10.0, white.clone())));
+        boxes2.add(Arc::new(Sphere::new_static(Point3::random_range(0.0, 165.0), 10.0, white.clone())));
     }
     world.add(Arc::new(Translate::new(
         Arc::new(RotateY::new(Arc::new(BvhNode::new(boxes2)), 15.0)),

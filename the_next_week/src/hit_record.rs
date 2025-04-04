@@ -34,13 +34,13 @@ impl HitRecord {
             -outward_normal
         };
         HitRecord {
-            p: p,
-            unit_normal: unit_normal,
-            mat: mat,
-            t: t,
-            u: u,
-            v: v,
-            front_face: front_face,
+            p,
+            unit_normal,
+            mat,
+            t,
+            u,
+            v,
+            front_face,
         }
     }
 
