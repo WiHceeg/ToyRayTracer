@@ -1,18 +1,17 @@
 use std::sync::Arc;
 
-use crate::hittable::Hittable;
 use crate::aabb::Aabb;
-use crate::hittable_list::HittableList;
-use crate::ray::Ray;
-use crate::interval::Interval;
 use crate::hit_record::HitRecord;
+use crate::hittable::Hittable;
+use crate::hittable_list::HittableList;
+use crate::interval::Interval;
+use crate::ray::Ray;
 
 pub struct BvhNode {
     left: Arc<dyn Hittable>,
     right: Arc<dyn Hittable>,
     bbox: Aabb,
 }
-
 
 impl BvhNode {
     pub fn new(mut list: HittableList) -> BvhNode {
@@ -58,25 +57,25 @@ impl BvhNode {
 }
 
 impl Hittable for BvhNode {
-
     fn hit(&self, r: &Ray, ray_t: Interval) -> Option<HitRecord> {
         if !self.bbox.hit(r, ray_t) {
             return None;
         }
-        let left_hit = self.left.hit(r, ray_t);
-        // 根据左子节点的结果调整右子节点的时间区间
-        let right_t = match left_hit {
-            Some(ref hit) => Interval::new(ray_t.min, hit.t),
-            None => ray_t,
-        };
-        // 计算右子节点的命中结果（在调整后的时间区间内）
-        let right_hit = self.right.hit(r, right_t);
-        // 合并结果：右子节点命中优先（因时间更早），否则返回左子节点结果
-        right_hit.or(left_hit)
+        // 先检查左子树
+        match self.left.hit(r, ray_t) {
+            Some(left_rec) => {
+                // 如果左子树命中，用更窄的区间检查右子树
+                let right_t = Interval::new(ray_t.min, left_rec.t);
+                self.right.hit(r, right_t).or(Some(left_rec))
+            }
+            None => {
+                // 左子树未命中，正常检查右子树
+                self.right.hit(r, ray_t)
+            }
+        }
     }
 
     fn bounding_box(&self) -> Aabb {
         self.bbox
     }
-    
 }
