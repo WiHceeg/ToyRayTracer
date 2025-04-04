@@ -33,7 +33,7 @@ impl Aabb {
         Aabb { x, y, z }.pad_to_minimums()
     }
 
-    pub fn new_from_2_points(a: Point3, b: Point3) -> Aabb {
+    pub fn new_from_two_points(a: Point3, b: Point3) -> Aabb {
         Aabb {
             x: if a.x < b.x {
                 Interval::new(a.x, b.x)

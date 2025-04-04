@@ -65,8 +65,8 @@ impl Quad {
         let n = u.cross(v);
         let unit_normal = n.normalize();
         let w = n / n.length_squared();
-        let bbox_diagonal1 = Aabb::new_from_2_points(Q, Q + u + v);
-        let bbox_diagonal2 = Aabb::new_from_2_points(Q + u, Q + v);
+        let bbox_diagonal1 = Aabb::new_from_two_points(Q, Q + u + v);
+        let bbox_diagonal2 = Aabb::new_from_two_points(Q + u, Q + v);
         Quad {
             Q,
             u,
