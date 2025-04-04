@@ -38,8 +38,8 @@ impl Perlin {
         };
 
         Perlin {
-            randfloat: randfloat,
-            randvec: randvec,
+            randfloat,
+            randvec,
             perm_x: perlin_generate_perm(),
             perm_y: perlin_generate_perm(),
             perm_z: perlin_generate_perm(),

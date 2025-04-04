@@ -28,7 +28,7 @@ impl Lambertian {
     }
 
     pub fn new_from_texture(tex: Arc<dyn Texture>) -> Lambertian {
-        Lambertian { tex: tex }
+        Lambertian { tex }
     }
 }
 
@@ -51,8 +51,8 @@ pub struct Metal {
 impl Metal {
     pub fn new(albedo: Color, fuzz: f64) -> Metal {
         Metal {
-            albedo: albedo,
-            fuzz: fuzz,
+            albedo,
+            fuzz,
         }
     }
 }
@@ -77,7 +77,7 @@ pub struct Dielectric {
 impl Dielectric {
     pub fn new(refraction_index: f64) -> Dielectric {
         Dielectric {
-            refraction_index: refraction_index,
+            refraction_index,
         }
     }
 
@@ -129,7 +129,7 @@ impl DiffuseLight {
     }
 
     pub fn new_from_texture(tex: Arc<dyn Texture>) -> DiffuseLight {
-        DiffuseLight { tex: tex }
+        DiffuseLight { tex }
     }
 }
 
@@ -154,7 +154,7 @@ impl Isotropic {
     }
 
     pub fn new_from_texture(tex: Arc<dyn Texture>) -> Isotropic {
-        Isotropic { tex: tex }
+        Isotropic { tex }
     }
 }
 

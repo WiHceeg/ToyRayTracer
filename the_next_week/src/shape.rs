@@ -40,11 +40,7 @@ pub trait Shape: Hittable {
         let alpha = self.get_w().dot(planar_hip_point_vector.cross(self.get_v()));
         let beta = self.get_w().dot(self.get_u().cross(planar_hip_point_vector));
 
-        if let Some(uv) = self.alpha_beta_hit_uv(alpha, beta) {
-            Some(HitRecord::with_hit_data(t, intersection, uv, r, self.get_normal(), self.get_mat_clone()))
-        } else {
-            None
-        }
+        self.alpha_beta_hit_uv(alpha, beta).map(|uv| HitRecord::with_hit_data(t, intersection, uv, r, self.get_normal(), self.get_mat_clone()))
     }
 
     /// 输入以 self.u, self.v 基向量为坐标轴的坐标，输出纹理坐标
@@ -72,13 +68,13 @@ impl Quad {
         let bbox_diagonal1 = Aabb::new_from_2_points(Q, Q + u + v);
         let bbox_diagonal2 = Aabb::new_from_2_points(Q + u, Q + v);
         Quad {
-            Q: Q,
-            u: u,
-            v: v,
-            w: w,
-            mat: mat,
+            Q,
+            u,
+            v,
+            w,
+            mat,
             bbox: Aabb::new_from_merged(bbox_diagonal1, bbox_diagonal2),
-            unit_normal: unit_normal,
+            unit_normal,
             D: unit_normal.dot(Q),
         }
     }
@@ -110,7 +106,7 @@ impl Hittable for Quad {
     }
     
     fn hit(&self, r: &Ray, ray_t: Interval) -> Option<HitRecord> {
-        <Self as Shape>::hit(&self, r, ray_t)
+        <Self as Shape>::hit(self, r, ray_t)
     }
 }
 
@@ -171,13 +167,13 @@ impl Tri {
         let w = n / n.length_squared();
 
         Tri {
-            Q: Q,
-            u: u,
-            v: v,
-            w: w,
-            mat: mat,
+            Q,
+            u,
+            v,
+            w,
+            mat,
             bbox: Aabb::new_from_points_vec(vec![Q, Q + u, Q + v]),
-            unit_normal: unit_normal,
+            unit_normal,
             D: unit_normal.dot(Q),
         }
     }
@@ -190,7 +186,7 @@ impl Hittable for Tri {
     }
     
     fn hit(&self, r: &Ray, ray_t: Interval) -> Option<HitRecord> {
-        <Self as Shape>::hit(&self, r, ray_t)
+        <Self as Shape>::hit(self, r, ray_t)
     }
 }
 
@@ -258,13 +254,13 @@ impl Ellipse {
         );
 
         Ellipse {
-            center: center,
-            a: a,
-            b: b,
-            w: w,
-            mat: mat,
-            bbox: bbox,
-            unit_normal: unit_normal,
+            center,
+            a,
+            b,
+            w,
+            mat,
+            bbox,
+            unit_normal,
             D: unit_normal.dot(center),
         }
     }
@@ -278,7 +274,7 @@ impl Hittable for Ellipse {
     }
     
     fn hit(&self, r: &Ray, ray_t: Interval) -> Option<HitRecord> {
-        <Self as Shape>::hit(&self, r, ray_t)
+        <Self as Shape>::hit(self, r, ray_t)
     }
 }
 
@@ -348,15 +344,15 @@ impl Annulus {
         );
 
         Annulus {
-            center: center,
-            outer_vector: outer_vector,
-            inner_vector: inner_vector,
-            outer_radius: outer_radius,
-            inner_radius: inner_radius,
-            w: w,
-            mat: mat,
-            bbox: bbox,
-            unit_normal: unit_normal,
+            center,
+            outer_vector,
+            inner_vector,
+            outer_radius,
+            inner_radius,
+            w,
+            mat,
+            bbox,
+            unit_normal,
             D: unit_normal.dot(center),
         }        
     }
@@ -371,7 +367,7 @@ impl Hittable for Annulus {
     }
     
     fn hit(&self, r: &Ray, ray_t: Interval) -> Option<HitRecord> {
-        <Self as Shape>::hit(&self, r, ray_t)
+        <Self as Shape>::hit(self, r, ray_t)
     }
 }
 

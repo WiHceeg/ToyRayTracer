@@ -19,7 +19,7 @@ pub struct SolidColor {
 
 impl SolidColor {
     pub fn new(albedo: Color) -> SolidColor {
-        SolidColor { albedo: albedo }
+        SolidColor { albedo }
     }
 }
 
@@ -96,7 +96,7 @@ impl NoiseTexture {
     pub fn new(scale: f64) -> NoiseTexture {
         NoiseTexture {
             noise: Perlin::new(),
-            scale: scale,
+            scale,
         }
     }
 }

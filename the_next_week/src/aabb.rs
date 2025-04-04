@@ -30,7 +30,7 @@ impl Aabb {
     };
 
     pub fn new(x: Interval, y: Interval, z: Interval) -> Aabb {
-        Aabb { x: x, y: y, z: z }.pad_to_minimums()
+        Aabb { x, y, z }.pad_to_minimums()
     }
 
     pub fn new_from_2_points(a: Point3, b: Point3) -> Aabb {

@@ -19,9 +19,9 @@ impl Translate {
     pub fn new(object: Arc<dyn Hittable>, offset: DVec3) -> Self {
         let bbox = object.bounding_box().translate(offset);
         Self {
-            object: object,
-            offset: offset,
-            bbox: bbox,
+            object,
+            offset,
+            bbox,
         }
     }
 }
@@ -54,10 +54,10 @@ impl RotateY {
         let radians = angle.to_radians();
         let bbox = object.bounding_box().rotate_y(angle);
         Self {
-            object: object,
+            object,
             sin_theta: radians.sin(),
             cos_theta: radians.cos(),
-            bbox: bbox,
+            bbox,
         }
     }
 }
