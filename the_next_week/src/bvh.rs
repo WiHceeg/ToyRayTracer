@@ -21,40 +21,39 @@ impl BvhNode {
     }
 
     fn build(objects: &mut Vec<Arc<dyn Hittable>>, start: usize, end: usize) -> BvhNode {
-
         let mut bbox = Aabb::EMPTY;
         for i in start..end {
             bbox = Aabb::new_from_merged(bbox, objects[i].bounding_box());
         }
         let axis = bbox.longest_axis();
         let object_span = end - start;
-        if object_span == 1 {
-            BvhNode {
+
+        match object_span {
+            1 => BvhNode {
                 left: objects[start].clone(),
                 right: objects[start].clone(),
                 bbox,
-            }
-        } else if object_span == 2 {
-            BvhNode {
+            },
+            2 => BvhNode {
                 left: objects[start].clone(),
                 right: objects[start + 1].clone(),
                 bbox,
-            }
-        } else {
-            let comparator = |a: &Arc<dyn Hittable>, b: &Arc<dyn Hittable>| {
-                let a_axis_min = a.bounding_box()[axis].min;
-                let b_axis_min = b.bounding_box()[axis].min;
-                a_axis_min.partial_cmp(&b_axis_min).unwrap()
-            };
-            objects[start..end].sort_by(comparator);
-            let mid = start + object_span / 2;
-            BvhNode {
-                left: Arc::new(BvhNode::build(objects, start, mid)),
-                right: Arc::new(BvhNode::build(objects, mid, end)),
-                bbox,
+            },
+            _ => {
+                let comparator = |a: &Arc<dyn Hittable>, b: &Arc<dyn Hittable>| {
+                    let a_axis_min = a.bounding_box()[axis].min;
+                    let b_axis_min = b.bounding_box()[axis].min;
+                    a_axis_min.partial_cmp(&b_axis_min).unwrap()
+                };
+                objects[start..end].sort_by(comparator);
+                let mid = start + object_span / 2;
+                BvhNode {
+                    left: Arc::new(BvhNode::build(objects, start, mid)),
+                    right: Arc::new(BvhNode::build(objects, mid, end)),
+                    bbox,
+                }
             }
         }
-
     }
 }
 
