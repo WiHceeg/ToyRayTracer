@@ -1,8 +1,9 @@
 
 use std::f64;
 
-use crate::Point3;
 use glam::DVec3;
+
+use crate::point3::Point3;
 
 pub struct Ray {
     orig: Point3,
