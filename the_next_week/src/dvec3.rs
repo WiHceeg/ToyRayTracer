@@ -1,6 +1,7 @@
 use std::ops::Add;
 
 use glam::DVec3;
+use rand::rngs::ThreadRng;
 use rand::Rng;
 
 use crate::aabb::Aabb;
@@ -10,6 +11,7 @@ use crate::constant;
 pub trait DVec3Ext {
     fn random() -> DVec3;
     fn random_range(min: f64, max: f64) -> DVec3;
+    fn random_range_with_rng(min: f64, max: f64, rng: &mut ThreadRng) -> DVec3;
     fn random_unit() -> DVec3;
     fn random_on_hemisphere(normal: DVec3) -> DVec3;
     fn random_in_unit_disk() -> DVec3;
@@ -25,6 +27,14 @@ impl DVec3Ext for DVec3 {
 
     fn random_range(min: f64, max: f64) -> DVec3 {
         let mut rng = rand::rng();
+        DVec3::new(
+            rng.random_range(min..max),
+            rng.random_range(min..max),
+            rng.random_range(min..max),
+        )
+    }
+
+    fn random_range_with_rng(min: f64, max: f64, rng: &mut ThreadRng) -> DVec3 {
         DVec3::new(
             rng.random_range(min..max),
             rng.random_range(min..max),

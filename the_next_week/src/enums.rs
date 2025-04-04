@@ -8,6 +8,8 @@ pub enum Scene {
     SimpleLight,
     CornellBox,
     CornellSmoke,
+    FinalSceneLD,
+    FinalSceneHD,
 }
 
 pub enum NoiseType {

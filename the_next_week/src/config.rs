@@ -5,7 +5,7 @@ use crate::enums::Scene;
 pub const SKY_GRADIENT: Color = Color::new(0.5, 0.7, 1.0);
 pub const ENABLE_BVH: bool = true;
 
-pub const TARGET_SCENE: Scene = Scene::CornellSmoke;
+pub const TARGET_SCENE: Scene = Scene::FinalSceneHD;
 
 // perlin noise 相关全局设置
 pub const NOISE_TYPE: NoiseType = NoiseType::TurbulenceMarble;

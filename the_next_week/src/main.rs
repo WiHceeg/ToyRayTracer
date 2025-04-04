@@ -8,6 +8,7 @@ mod config_checkered_spheres;
 mod config_cornell_box;
 mod config_cornell_smoke;
 mod config_earth;
+mod config_final_scene;
 mod config_perlin_spheres;
 mod config_shapes;
 mod config_simple_light;
@@ -96,7 +97,7 @@ fn bouncing_spheres() -> anyhow::Result<()> {
                     )));
                 } else if choose_mat < 0.95 {
                     // 金属材质
-                    let albedo = Color::random_range(0.5, 1.0);
+                    let albedo = Color::random_range_with_rng(0.5, 1.0, &mut rng);
                     let fuzz = rng.random_range(0.0..0.5);
                     let sphere_material = Arc::new(Metal::new(albedo, fuzz));
                     world.add(Arc::new(Sphere::new_static(center, 0.2, sphere_material)));
@@ -459,6 +460,93 @@ fn cornell_smoke() -> anyhow::Result<()> {
     cam.render(&world)    
 }
 
+fn final_scene(image_width: usize, samples_per_pixel: usize, max_depth: usize) -> anyhow::Result<()> {
+
+    // 地面绿色盒子阵列，高度随机
+    let mut boxes1 = HittableList::new();
+    let ground = Arc::new(Lambertian::new_from_solid_color(Color::new(0.48, 0.83, 0.53)));
+    let boxes_per_side  = 20;
+    let mut rng = rand::rng();
+    for i in 0..boxes_per_side {
+        for j in 0..boxes_per_side {
+            let w = 100.0;
+            let x0 = -1000.0 + i as f64 * w;
+            let z0 = -1000.0 + j as f64 * w;
+            let y0 = 1.0;
+            let x1 = x0 + w;
+            let y1 = rng.random_range(1.0..101.0);
+            let z1 = z0 + w;
+
+            boxes1.add(Arc::new(Quad::cuboid(Point3::new(x0, y0, z0), Point3::new(x1, y1, z1), ground.clone())));
+        }
+    }
+    let mut world = HittableList::new();
+    world.add(Arc::new(BvhNode::new(boxes1)));
+
+    // 光源
+    let light = Arc::new(DiffuseLight::new_from_solid_color(Color::new(7.0, 7.0, 7.0)));
+    world.add(Arc::new(Quad::new(Point3::new(123.0,554.0,147.0), DVec3::new(300.0, 0.0, 0.0), DVec3::new(0.0, 0.0, 256.0), light)));
+
+    // 运动模糊的橙黄色球
+    let center1 = Point3::new(400.0, 400.0, 200.0);
+    let center2 = center1 + DVec3::new(30.0, 0.0, 0.0);
+    let sphere_material = Arc::new(Lambertian::new_from_solid_color(Color::new(0.7, 0.3, 0.1)));
+    world.add(Arc::new(Sphere::new_moving(center1, center2, 50.0, sphere_material)));
+
+    // 玻璃球
+    world.add(Arc::new(Sphere::new_static(Point3::new(260.0, 150.0, 45.0), 50.0, Arc::new(Dielectric::new(1.5)))));
+    
+    // 金属球
+    world.add(Arc::new(Sphere::new_static(Point3::new(0.0, 150.0, 145.0), 50.0, Arc::new(Metal::new(Color::new(0.8, 0.8, 0.9), 1.0)))));
+
+    // 蓝色玻璃浓雾球
+    let mut boundary = Arc::new(Sphere::new_static(Point3::new(360.0, 150.0, 145.0), 70.0, Arc::new(Dielectric::new(1.5))));
+    world.add(boundary.clone());
+    world.add(Arc::new(ConstantMedium::new_from_solid_color(boundary, 0.2, Color::new(0.2, 0.4, 0.9))));
+    
+    // 全局白色薄雾
+    boundary = Arc::new(Sphere::new_static(Point3::new(0.0, 0.0, 0.0), 5000.0, Arc::new(Dielectric::new(1.5))));
+    world.add(Arc::new(ConstantMedium::new_from_solid_color(boundary, 0.0001, Color::new(1.0, 1.0, 1.0))));
+
+    // 地球
+    let emat = Arc::new(Lambertian::new_from_texture(Arc::new(ImageTexture::new("earthmap.jpg")?)));
+    world.add(Arc::new(Sphere::new_static(Point3::new(400.0, 200.0, 400.0), 100.0, emat)));
+    
+    // 噪声纹理球
+    let perlin_texture = Arc::new(NoiseTexture::new(config_final_scene::INPUT_POINT_SCALE));
+    world.add(Arc::new(Sphere::new_static(Point3::new(220.0, 280.0, 300.0), 80.0, Arc::new(Lambertian::new_from_texture(perlin_texture)))));
+
+    // 随机小球群组成的立方体
+    let mut boxes2 = HittableList::new();
+    let white = Arc::new(Lambertian::new_from_solid_color(Color::new(0.73, 0.73, 0.73)));
+    let ns = 1000;
+    for _ in 0..ns {
+        boxes2.add(Arc::new(Sphere::new_static(Point3::random_range_with_rng(0.0, 165.0, &mut rng), 10.0, white.clone())));
+    }
+    world.add(Arc::new(Translate::new(
+        Arc::new(RotateY::new(Arc::new(BvhNode::new(boxes2)), 15.0)),
+        DVec3::new(-100.0, 270.0, 395.0),
+    )));
+
+    let mut cam = Camera::default();
+    cam.aspect_ratio = config_final_scene::ASPECT_RATIO;
+    cam.image_width = image_width;
+    cam.samples_per_pixel = samples_per_pixel;
+    cam.max_depth = max_depth;
+    cam.background = config_final_scene::BACKGROUND;
+    cam.enable_gradient_sky = config_final_scene::ENABLE_GRADIENT_SKY;
+
+    cam.vfov = config_final_scene::V_FOV;
+    cam.lookfrom = config_final_scene::LOOKFROM;
+    cam.lookat = config_final_scene::LOOKAT;
+    cam.vup = config_final_scene::V_UP;
+
+    cam.defocus_angle = config_final_scene::DEFOCUS_ANGLE;
+    cam.focus_dist = config_final_scene::FOCUS_DIST;
+
+    cam.render(&world)    
+}
+
 fn main() {
     let res = match config::TARGET_SCENE {
         Scene::BouncingSpheres => bouncing_spheres(),
@@ -470,6 +558,8 @@ fn main() {
         Scene::SimpleLight => simple_light(),
         Scene::CornellBox => cornell_box(),
         Scene::CornellSmoke => cornell_smoke(),
+        Scene::FinalSceneLD => final_scene(config_final_scene::IMAGE_WIDTH_LD, config_final_scene::SAMPLES_PER_PIXEL_LD, config_final_scene::MAX_DEPTH_LD),
+        Scene::FinalSceneHD => final_scene(config_final_scene::IMAGE_WIDTH_HD, config_final_scene::SAMPLES_PER_PIXEL_HD, config_final_scene::MAX_DEPTH_HD),
     };
 
     match res {
