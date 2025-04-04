@@ -1,5 +1,5 @@
 use glam::DVec3;
-use rand::Rng;
+
 use std::fs;
 use std::io;
 use std::io::Write;
@@ -13,6 +13,8 @@ use crate::dvec3::DVec3Ext;
 use crate::hittable::Hittable;
 use crate::interval::Interval;
 use crate::point3::Point3;
+use crate::random_number_generator::{random, random_range};
+
 use crate::ray::Ray;
 
 #[derive(Default)]
@@ -130,13 +132,12 @@ impl Camera {
         // 虚化原理是，从圆盘上无论哪个点往焦平面发射，一定能命中焦平面的目标点，因此焦平面最清晰
         let ray_origin = if self.defocus_angle <= 0.0 {self.center} else {self.defocus_disk_sample()};
         let ray_direction = pixel_sample - ray_origin;
-        let ray_time = rand::random::<f64>();
+        let ray_time = random();
         Ray::new_with_time(ray_origin, ray_direction, ray_time)
     }
 
     fn sample_square() -> DVec3 {
-        let mut rng = rand::rng();
-        DVec3::new(rng.random_range(-0.5..0.5), rng.random_range(-0.5..0.5), 0.)
+        DVec3::new(random_range(-0.5..0.5), random_range(-0.5..0.5), 0.)
     }
 
     fn defocus_disk_sample(&self) -> Point3 {

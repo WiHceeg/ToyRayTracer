@@ -1,17 +1,15 @@
 use std::ops::Add;
 
 use glam::DVec3;
-use rand::rngs::ThreadRng;
-use rand::Rng;
 
 use crate::aabb::Aabb;
 use crate::constant;
+use crate::random_number_generator::{random, random_range};
 
 
 pub trait DVec3Ext {
     fn random() -> DVec3;
     fn random_range(min: f64, max: f64) -> DVec3;
-    fn random_range_with_rng(min: f64, max: f64, rng: &mut ThreadRng) -> DVec3;
     fn random_unit() -> DVec3;
     fn random_on_hemisphere(normal: DVec3) -> DVec3;
     fn random_in_unit_disk() -> DVec3;
@@ -21,31 +19,20 @@ pub trait DVec3Ext {
 impl DVec3Ext for DVec3 {
     // [0, 1)
     fn random() -> DVec3 {
-        let mut rng = rand::rng();
-        DVec3::new(rng.random(), rng.random(), rng.random())
+        DVec3::new(random(), random(), random())
     }
 
     fn random_range(min: f64, max: f64) -> DVec3 {
-        let mut rng = rand::rng();
         DVec3::new(
-            rng.random_range(min..max),
-            rng.random_range(min..max),
-            rng.random_range(min..max),
-        )
-    }
-
-    fn random_range_with_rng(min: f64, max: f64, rng: &mut ThreadRng) -> DVec3 {
-        DVec3::new(
-            rng.random_range(min..max),
-            rng.random_range(min..max),
-            rng.random_range(min..max),
+            random_range(min..max),
+            random_range(min..max),
+            random_range(min..max),
         )
     }
 
     fn random_unit() -> DVec3 {
-        let mut rng = rand::rng();
         loop {
-            let p = DVec3::new(rng.random_range(-1.0..1.0), rng.random_range(-1.0..1.0), rng.random_range(-1.0..1.0));
+            let p = DVec3::new(random_range(-1.0..1.0), random_range(-1.0..1.0), random_range(-1.0..1.0));
             let lensq = p.length_squared();
             if 1e-160 < lensq && lensq <= 1. {
                 return p.normalize();
@@ -68,9 +55,8 @@ impl DVec3Ext for DVec3 {
     }
     
     fn random_in_unit_disk() -> DVec3 {
-        let mut rng = rand::rng();
         loop {
-            let p = DVec3::new(rng.random_range(-1.0..1.0), rng.random_range(-1.0..1.0), 0.0);
+            let p = DVec3::new(random_range(-1.0..1.0), random_range(-1.0..1.0), 0.0);
             if p.length_squared() < 1.0 {
                 return p;
             }
