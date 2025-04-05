@@ -38,6 +38,9 @@ pub struct Camera {
 
     image_height: usize,      // Rendered image height
     pixel_samples_scale: f64, // Color scale factor for a sum of pixel samples
+    sqrt_spp: usize,             // Square root of number of samples per pixel
+    recip_sqrt_spp: f64,       // 1 / sqrt_spp
+    
     center: Point3,           // Camera center
     pixel00_loc: Point3,      // Location of pixel 0, 0
     pixel_delta_u: DVec3,     // Offset to pixel to the right
@@ -74,9 +77,12 @@ impl Camera {
                 let mut row = Vec::with_capacity(self.image_width);
                 for i in 0..self.image_width {
                     let mut pixel_color = Color::ZERO;
-                    for _ in 0..self.samples_per_pixel {
-                        let r = self.get_ray(i, j);
-                        pixel_color += self.ray_color(&r, self.max_depth, world);
+
+                    for s_j in 0.. self.sqrt_spp {
+                        for s_i in 0.. self.sqrt_spp {
+                            let r = self.get_ray(i, j, s_i, s_j);
+                            pixel_color += self.ray_color(&r, self.max_depth, world);
+                        }
                     }
                     row.push(self.pixel_samples_scale * pixel_color);
                 }
@@ -106,7 +112,9 @@ impl Camera {
             self.image_height = 1;
         }
 
-        self.pixel_samples_scale = 1. / self.samples_per_pixel as f64;
+        self.sqrt_spp = (self.samples_per_pixel as f64).sqrt() as usize;
+        self.pixel_samples_scale = 1. / (self.sqrt_spp * self.sqrt_spp) as f64;
+        self.recip_sqrt_spp = 1. / (self.sqrt_spp as f64);
 
         self.center = self.lookfrom;
 
@@ -137,9 +145,11 @@ impl Camera {
         self.defocus_disk_v = self.v * defocus_radius;
     }
 
-    // Construct a camera ray originating from the origin and directed at randomly sampled point around the pixel location i, j.
-    fn get_ray(&self, i: usize, j: usize) -> Ray {
-        let (offset_x, offset_y) = Camera::sample_square();
+    // Construct a camera ray originating from the defocus disk and directed at a randomly
+    // sampled point around the pixel location i, j for stratified sample square s_i, s_j.
+    fn get_ray(&self, i: usize, j: usize, s_i: usize, s_j: usize) -> Ray {
+        let (offset_x, offset_y) = self.sample_square_stratified(s_i, s_j);
+
         let pixel_sample = self.pixel00_loc
             + ((i as f64 + offset_x) * self.pixel_delta_u)
             + ((j as f64 + offset_y) * self.pixel_delta_v);
@@ -149,6 +159,12 @@ impl Camera {
         let ray_direction = pixel_sample - ray_origin;
         let ray_time = random();
         Ray::new_with_time(ray_origin, ray_direction, ray_time)
+    }
+
+    fn sample_square_stratified(&self, s_i: usize, s_j: usize) -> (f64, f64) {
+        let px = (s_i as f64 + random()) / self.sqrt_spp as f64 - 0.5;
+        let py = (s_j as f64 + random()) / self.sqrt_spp as f64 - 0.5;
+        (px, py)
     }
 
     fn sample_square() -> (f64, f64) {
