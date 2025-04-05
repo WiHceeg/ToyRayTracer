@@ -139,10 +139,10 @@ impl Camera {
 
     // Construct a camera ray originating from the origin and directed at randomly sampled point around the pixel location i, j.
     fn get_ray(&self, i: usize, j: usize) -> Ray {
-        let offset = Camera::sample_square();
+        let (offset_x, offset_y) = Camera::sample_square();
         let pixel_sample = self.pixel00_loc
-            + ((i as f64 + offset.x) * self.pixel_delta_u)
-            + ((j as f64 + offset.y) * self.pixel_delta_v);
+            + ((i as f64 + offset_x) * self.pixel_delta_u)
+            + ((j as f64 + offset_y) * self.pixel_delta_v);
 
         // 虚化原理是，从圆盘上无论哪个点往焦平面发射，一定能命中焦平面的目标点，因此焦平面最清晰
         let ray_origin = if self.defocus_angle <= 0.0 {self.center} else {self.defocus_disk_sample()};
@@ -151,8 +151,8 @@ impl Camera {
         Ray::new_with_time(ray_origin, ray_direction, ray_time)
     }
 
-    fn sample_square() -> DVec3 {
-        DVec3::new(random_range(-0.5..0.5), random_range(-0.5..0.5), 0.)
+    fn sample_square() -> (f64, f64) {
+        (random_range(-0.5..0.5), random_range(-0.5..0.5))
     }
 
     fn defocus_disk_sample(&self) -> Point3 {
