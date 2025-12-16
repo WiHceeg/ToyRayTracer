@@ -33,6 +33,7 @@
 
 .old/cpp_version/build/
 .old/cpp_version/.vscode/
+/target/
 /in_one_weekend/target/
 /in_one_weekend/output.ppm
 /in_one_weekend/Cargo.lock
